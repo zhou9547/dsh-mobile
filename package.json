@@ -73,7 +73,9 @@
     "LICENSE",
     "FUNNEL_THIRD_PARTY_LICENSES.txt",
     "SECURITY.md",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "docs/IPV6_DIRECT.md",
+    "docs/IPV6_DIRECT.en.md"
   ],
   "dsh": {
     "bundle": {

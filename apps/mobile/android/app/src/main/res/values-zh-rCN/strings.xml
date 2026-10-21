@@ -8,13 +8,13 @@
     <string name="lan_access_title">局域网访问</string>
     <string name="lan_access_description">同一 Wi-Fi 或手机热点下自动发现，连接更快、延迟更低。</string>
     <string name="remote_access_title">远程访问</string>
-    <string name="remote_access_description">离开本地网络后连接。电脑端可选 cpolar 或 Tailscale，App 会自动识别。</string>
+    <string name="remote_access_description">通过 IPv6 HTTPS、自定义域名或已配置的远程通道连接电脑。</string>
     <string name="paired_device_ready">已配对，点击即可连接</string>
     <string name="reconfigure_connection">重新配置</string>
     <string name="remote_setup_title">远程访问</string>
-    <string name="remote_setup_description">先在电脑端 DSH 选择 cpolar 或 Tailscale 并开启远程访问，再扫描配对二维码。</string>
+    <string name="remote_setup_description">先在电脑端 DSH 配置并开启远程访问，再扫码或粘贴配对链接。</string>
     <string name="remote_step_one">1. 在电脑端选择远程方式并按引导连接</string>
-    <string name="remote_step_two">2. 扫描远程配对二维码。App 自动识别通道，仍需经过 DSH 设备配对。</string>
+    <string name="remote_step_two">2. 扫码或粘贴配对链接。使用私有证书时，App 会核对 CA 指纹并自动保存对应 CA，无需安装到 Android 系统信任库。</string>
     <string name="scan_remote_qr">扫描远程配对二维码</string>
     <string name="remote_link_label">远程配对链接</string>
     <string name="remote_link_hint">粘贴电脑端生成的 HTTPS 配对链接</string>

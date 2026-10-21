@@ -8,6 +8,12 @@ The current stable app is **0.6.5** (build 81). The npm plugin and Android App h
 
 Android 10 or later is supported. The local iOS experiment is not a published or supported client.
 
+## 0.6.6 candidate changes
+
+- Recognize public IPv6 remote entries; custom domains use existing remote pairing.
+- Scanning/pasting a pairing link verifies and saves its private CA without system trust; certificate validity, host and fingerprint checks remain required.
+- This fork candidate is built by Actions; see the [IPv6 guide](../../docs/IPV6_DIRECT.en.md).
+
 ## Install and pair
 
 1. Install and enable the plugin using the [project quick start](../../README.en.md#quick-start). Complete LAN setup from the command line or the computer's **Mobile Access** panel.

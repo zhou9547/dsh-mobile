@@ -8,13 +8,13 @@
     <string name="lan_access_title">Rete locale</string>
     <string name="lan_access_description">Connessione rapida sulla stessa rete Wi-Fi o sull\'hotspot del telefono, con rilevamento automatico.</string>
     <string name="remote_access_title">Accesso remoto</string>
-    <string name="remote_access_description">Collegati fuori dalla rete locale. Scegli cpolar o Tailscale sul computer; l\'app rileva automaticamente il metodo.</string>
+    <string name="remote_access_description">Collegati tramite HTTPS IPv6, dominio personale o tunnel configurato.</string>
     <string name="paired_device_ready">Abbinato — tocca per connetterti</string>
     <string name="reconfigure_connection">Configura di nuovo</string>
     <string name="remote_setup_title">Accesso remoto</string>
-    <string name="remote_setup_description">Scegli cpolar o Tailscale in DSH sul computer, abilita Accesso remoto e scansiona il relativo codice QR.</string>
+    <string name="remote_setup_description">Configura e abilita l’accesso remoto in DSH sul computer, poi scansiona il QR o incolla il link.</string>
     <string name="remote_step_one">1. Scegli un metodo remoto sul computer e completa la configurazione</string>
-    <string name="remote_step_two">2. Scansiona il codice QR remoto. L\'app rileva il trasporto e resta attivo l\'abbinamento dei dispositivi DSH.</string>
+    <string name="remote_step_two">2. Scansiona il QR o incolla il link. Per i certificati privati, la CA viene verificata tramite impronta e salvata automaticamente. Non serve installarla nel sistema Android.</string>
     <string name="scan_remote_qr">Scansiona il QR remoto</string>
     <string name="remote_link_label">Link di abbinamento remoto</string>
     <string name="remote_link_hint">Incolla il link HTTPS generato sul computer</string>

@@ -1,6 +1,7 @@
 package io.github.sayach.dshmobile
 
 import java.util.Locale
+import java.net.InetAddress
 
 /** Classifies provider and user-owned remote hosts without treating LAN origins as remote. */
 internal object RemoteHostPolicy {
@@ -38,6 +39,7 @@ internal object RemoteHostPolicy {
         val normalized = host.lowercase(Locale.ROOT).trimEnd('.')
         if (isSupported(normalized)) return true
         if (isPublicIpv4(normalized)) return true
+        if (isPublicIpv6(normalized)) return true
         if (normalized.isEmpty() || normalized.contains(':') || normalized == "localhost"
             || normalized.endsWith(".local") || normalized.endsWith(".lan")
             || normalized.endsWith(".home") || normalized.endsWith(".internal")) return false
@@ -48,6 +50,23 @@ internal object RemoteHostPolicy {
                 && label.first().isLetterOrDigit() && label.last().isLetterOrDigit()
                 && label.all { character -> character.isLetterOrDigit() || character == '-' }
         }
+    }
+
+    /** Literal-only parsing avoids DNS and mirrors the plugin's public unicast policy. */
+    private fun isPublicIpv6(host: String): Boolean {
+        if (!host.contains(':') || host.contains('%') || !host.all { it in "0123456789abcdef:" }) return false
+        val bytes = runCatching { InetAddress.getByName(host).address }.getOrNull() ?: return false
+        if (bytes.size != 16) return false
+        val first = bytes[0].toInt() and 0xff
+        val second = bytes[1].toInt() and 0xff
+        val third = bytes[2].toInt() and 0xff
+        val fourth = bytes[3].toInt() and 0xff
+        if (first and 0xe0 != 0x20) return false
+        if (first == 0x20 && second == 0x01 && third < 2) return false // 2001::/23
+        if (first == 0x20 && second == 0x01 && third == 0x0d && fourth == 0xb8) return false
+        if (first == 0x20 && second == 0x02) return false
+        if (first == 0x3f && second == 0xff && third < 0x10) return false
+        return true
     }
 
     /** Returns whether this origin is valid for the selected connection mode. */

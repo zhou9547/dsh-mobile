@@ -2,6 +2,12 @@
 
 Notable changes are recorded here. GitHub Releases provide the downloadable packages and generated commit notes.
 
+## IPv6 fork candidate (unreleased)
+
+- Add a direct IPv6 HTTPS provider with custom-domain AAAA support, automatic CA/leaf generation and same-CA leaf renewal. Require existing fingerprint-bound dsh2 QR/link pairing.
+- Android 0.6.6 / build 82 recognizes public IPv6 entries and explains automatic App-private CA trust. Upstream published App metadata remains unchanged.
+- Build the fork APK and plugin through GitHub Actions. Debug APKs are test artifacts, not upstream-signed releases.
+
 ## 0.6.13 - 2026-10-19
 
 - Distinguish inbound HTTP receive timeouts (408 `request_timeout`) and oversized request headers (431 `headers_too_large`) from other malformed HTTP requests (400 `bad_request`). Preserve the existing receive limits and single-attempt POST forwarding; do not automatically retry messages.

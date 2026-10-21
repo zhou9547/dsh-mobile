@@ -8,13 +8,13 @@
     <string name="lan_access_title">Local network</string>
     <string name="lan_access_description">Fast connection on the same Wi-Fi or phone hotspot, with automatic discovery.</string>
     <string name="remote_access_title">Remote access</string>
-    <string name="remote_access_description">Connect away from the local network. Choose cpolar or Tailscale on the computer; the app detects it automatically.</string>
+    <string name="remote_access_description">Connect remotely using IPv6 HTTPS, a domain, or a configured tunnel.</string>
     <string name="paired_device_ready">Paired — tap to connect</string>
     <string name="reconfigure_connection">Set up again</string>
     <string name="remote_setup_title">Remote access</string>
-    <string name="remote_setup_description">Choose cpolar or Tailscale in desktop DSH, enable Remote Access, then scan its pairing QR code.</string>
+    <string name="remote_setup_description">Enable remote access in desktop DSH, then scan its pairing QR code or paste its pairing link.</string>
     <string name="remote_step_one">1. Choose a remote method on the computer and follow its setup</string>
-    <string name="remote_step_two">2. Scan the remote pairing QR code. The app detects the transport, and DSH device pairing still applies.</string>
+    <string name="remote_step_two">2. Scan the QR code or paste the pairing link. For private certificates, the app verifies the CA fingerprint and saves the CA automatically. No Android system CA installation is needed.</string>
     <string name="scan_remote_qr">Scan remote pairing QR</string>
     <string name="remote_link_label">Remote pairing link</string>
     <string name="remote_link_hint">Paste the HTTPS pairing link generated on the computer</string>

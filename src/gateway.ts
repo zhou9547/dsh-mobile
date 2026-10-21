@@ -1327,7 +1327,7 @@ export class MobileAccessGateway {
       await new Promise<void>((resolve, reject) => {
         const failed = (error: Error): void => { reject(error) }
         server.once('error', failed)
-        server.listen(this.config.listenPort, this.config.listenHost, () => {
+        server.listen({ port: this.config.listenPort, host: this.config.listenHost, ipv6Only: this.config.listenHost.includes(':') }, () => {
           server.off('error', failed)
           resolve()
         })

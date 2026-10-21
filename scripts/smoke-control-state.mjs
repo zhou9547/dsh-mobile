@@ -153,6 +153,13 @@ async function withControl(browser, name, options, run) {
       json(response, 200, state.remote)
       return
     }
+    if (pathname === `${prefix}/remote/ipv6/configure` && request.method === 'POST') {
+      if (state.holdIpv6) { hold(entry, response); return }
+      state.remote.ipv6Configuration = { configured: true, ...body }
+      Object.assign(state.remote, { running: true, state: 'ready', origin: body.publicOrigin })
+      json(response, 200, state.remote)
+      return
+    }
     if (pathname === `${prefix}/remote/provider` && request.method === 'POST') state.remote.provider = body.provider
     if (pathname.startsWith(`${prefix}/remote/`)) { json(response, 200, state.remote); return }
     errors.push(`Unexpected fixture request: ${request.method} ${pathname}`)
@@ -311,9 +318,47 @@ async function withControl(browser, name, options, run) {
   }
 }
 
-const browser = await chromium.launch({ headless: true })
+const browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}) })
 let cases = 0
 try {
+  await withControl(browser, 'IPv6 direct domain form and CA guidance', { width: 360 }, async ({ page, state, consumed, settle, openRemote, pollRemote, waitRequest }) => {
+    await openRemote()
+    if (!await page.locator('.dsh-mobile-control__self-hosted').evaluate(node => node.open)) {
+      await page.locator('.dsh-mobile-control__self-hosted > summary').click()
+    }
+    const providerPath = `${prefix}/remote/provider`
+    const before = await consumed(providerPath)
+    await page.locator('.dsh-mobile-control__provider.is-ipv6').click()
+    await settle(providerPath, before)
+    const setup = page.locator('.dsh-mobile-control__ipv6-setup')
+    assert.equal(await setup.isVisible(), true)
+    assert.match(await setup.textContent(), /without system trust/u)
+    const url = setup.locator('input[type=url]')
+    await url.fill('https://phone.example.com:3445')
+    await pollRemote()
+    assert.equal(await url.inputValue(), 'https://phone.example.com:3445', 'Polling erased the IPv6 domain draft')
+    const save = setup.locator('button')
+    assert.equal(await save.textContent(), 'Generate certificate and start HTTPS')
+    const bounds = await save.boundingBox()
+    assert(bounds && bounds.width >= 44 && bounds.height >= 44, 'IPv6 action lost its touch target')
+    const configurePath = `${prefix}/remote/ipv6/configure`
+    state.holdIpv6 = true
+    await save.click()
+    const held = await waitRequest('POST', configurePath)
+    assert.deepEqual(held.body, { publicOrigin: 'https://phone.example.com:3445', listenHost: '::' })
+    assert.equal(await save.isDisabled(), true)
+    assert.equal(await url.isDisabled(), true)
+    state.remote.ipv6Configuration = { configured: true, publicOrigin: held.body.publicOrigin, listenHost: '::' }
+    Object.assign(state.remote, { state: 'ready', running: true, origin: held.body.publicOrigin })
+    const consumedBefore = await consumed(configurePath)
+    held.release()
+    await settle(configurePath, consumedBefore)
+    assert.equal(await save.isDisabled(), false)
+    assert.equal(await setup.evaluate(node => node.scrollWidth <= node.clientWidth + 1), true, 'IPv6 form overflowed on a narrow screen')
+    await mkdir(resolve(mobileRoot, 'local'), { recursive: true })
+    await page.screenshot({ path: resolve(mobileRoot, 'local/ipv6-control.png'), fullPage: true })
+  })
+  cases += 1
   for (const language of ['en', 'it', 'zh']) {
     const codes = ['sidecar_exited', 'some_unknown_future_code', 'funnel_https_required', 'cloudflared_invalid_output', 'future_<img src=x onerror=alert(1)>']
     const diagnostics = {

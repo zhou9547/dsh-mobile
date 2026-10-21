@@ -1,6 +1,7 @@
 package io.github.sayach.dshmobile
 
 import java.net.URI
+import java.net.InetAddress
 
 /** A normalized HTTPS origin approved for the dedicated DSH WebView. */
 @ConsistentCopyVisibility
@@ -50,7 +51,7 @@ internal data class GatewayOrigin private constructor(
             if (unwrapped.contains(':')) {
                 if (unwrapped.contains('%') || unwrapped.count { it == ':' } < 2) return null
                 if (!unwrapped.all { it in '0'..'9' || it in 'a'..'f' || it == ':' || it == '.' }) return null
-                return unwrapped
+                return canonicalIpv6(unwrapped)
             }
             if (unwrapped.length > 253 || unwrapped.startsWith('.') || unwrapped.endsWith('.')) return null
             val labels = unwrapped.split('.')
@@ -65,6 +66,25 @@ internal data class GatewayOrigin private constructor(
                 return null
             }
             return unwrapped
+        }
+
+        /** RFC 5952 spelling keeps pasted expanded literals equal to WebView-normalized URLs. */
+        private fun canonicalIpv6(host: String): String? {
+            val bytes = runCatching { InetAddress.getByName(host).address }.getOrNull() ?: return null
+            if (bytes.size != 16) return host // Preserve legacy IPv4-mapped LAN spelling.
+            val groups = (0 until 8).map { ((bytes[it * 2].toInt() and 0xff) shl 8) or (bytes[it * 2 + 1].toInt() and 0xff) }
+            var bestStart = -1
+            var bestLength = 1
+            var index = 0
+            while (index < groups.size) {
+                if (groups[index] != 0) { index++; continue }
+                val start = index
+                while (index < groups.size && groups[index] == 0) index++
+                if (index - start > bestLength) { bestStart = start; bestLength = index - start }
+            }
+            val text = groups.map { it.toString(16) }
+            if (bestStart < 0) return text.joinToString(":")
+            return text.take(bestStart).joinToString(":") + "::" + text.drop(bestStart + bestLength).joinToString(":")
         }
 
         private fun parseUri(rawValue: String): URI? = runCatching { URI(rawValue) }.getOrNull()

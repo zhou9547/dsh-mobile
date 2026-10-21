@@ -820,7 +820,7 @@ describe('mobile-control localization', () => {
     const source = readFileSync(new URL('../src/client.ts', import.meta.url), 'utf8')
     expect(source).toContain("const managedOrigin = origin && data.originMode === 'managed'")
     expect(source).toContain("t(managedOrigin ? 'caddyName' : 'originName')")
-    expect(source).toContain("ready: origin ? t(managedOrigin ? 'caddyVerified' : 'originReady')")
+    expect(source).toContain("ready: ipv6 ? t('ipv6Ready') : origin ? t(managedOrigin ? 'caddyVerified' : 'originReady')")
     expect(source).toContain("origin && !managedOrigin ? t('originBackendReady') : t('ready')")
     expect(source).toContain('caddyModeManagedSelected === managedOrigin')
     // The preview remains a form draft: only clean modes follow controller reads.
@@ -845,11 +845,11 @@ describe('mobile-control localization', () => {
 
   it('wires private-origin controls and protects edited forms from stale poll snapshots', () => {
     const source = readFileSync(new URL('../src/client.ts', import.meta.url), 'utf8')
-    expect(source).toContain('selfHostedBody.append(frpChoice, originChoice)')
+    expect(source).toContain('selfHostedBody.append(ipv6Choice, frpChoice, originChoice)')
     expect(source).toContain('/api/mobile-access/remote/origin/configure')
     expect(source).toContain('/api/mobile-access/remote/origin/purge')
     expect(source).toContain('if (!originFormDirty && !originFormBusy)')
-    expect(source).toContain('if (remoteLoadInFlight || originFormBusy || caddyFormBusy) return')
+    expect(source).toContain('if (remoteLoadInFlight || originFormBusy || caddyFormBusy || ipv6FormBusy) return')
     expect(source).toContain('if (epoch === remoteSnapshotEpoch) renderRemote(data)')
     expect(source).toContain("originSetup.setAttribute('aria-busy', String(originFormBusy))")
     expect(source).toContain("input?.setAttribute('aria-invalid', 'true')")

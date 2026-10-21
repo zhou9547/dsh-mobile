@@ -342,6 +342,72 @@
       "host": "999.1.1.1",
       "allowedRemote": false,
       "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification 2606:4700::1111",
+      "host": "2606:4700::1111",
+      "allowedRemote": true,
+      "allowedLan": false
+    },
+    {
+      "name": "IPv6 remote classification 240e:1234::10",
+      "host": "240e:1234::10",
+      "allowedRemote": true,
+      "allowedLan": false
+    },
+    {
+      "name": "IPv6 remote classification 2001:db8::1",
+      "host": "2001:db8::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification ::1",
+      "host": "::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification fe80::1",
+      "host": "fe80::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification fd12::1",
+      "host": "fd12::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification ff02::1",
+      "host": "ff02::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification ::ffff:8.8.8.8",
+      "host": "::ffff:8.8.8.8",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification 2001::1",
+      "host": "2001::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification 2002::1",
+      "host": "2002::1",
+      "allowedRemote": false,
+      "allowedLan": true
+    },
+    {
+      "name": "IPv6 remote classification 3fff::1",
+      "host": "3fff::1",
+      "allowedRemote": false,
+      "allowedLan": true
     }
   ]
 }

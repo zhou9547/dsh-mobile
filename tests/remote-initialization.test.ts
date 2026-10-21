@@ -8,6 +8,7 @@ import { CpolarController } from '../src/cpolar.js'
 import { CloudflaredController } from '../src/cloudflared.js'
 import { FrpController } from '../src/frp.js'
 import { FrpConfigStore } from '../src/frp-config.js'
+import { Ipv6ConfigStore, Ipv6Controller } from '../src/ipv6-direct.js'
 import { ManagedOriginController } from '../src/managed-origin.js'
 import { REMOTE_PROVIDERS, type RemoteProvider, type RemoteProviderController } from '../src/remote.js'
 
@@ -58,6 +59,9 @@ function controllerFixture(provider: RemoteProvider, store: JsonMobileAccessCont
       controller = new ManagedOriginController({ store, modeStore: { load: async () => ({ version: 1, mode: 'external' }), save: async () => {} }, external, managed })
       break
     }
+    case 'ipv6':
+      controller = new Ipv6Controller({ store, config: new Ipv6ConfigStore(join(root, 'ipv6'), root), createGateway })
+      break
   }
   controllers.push(controller)
   return { controller, createGateway, children }

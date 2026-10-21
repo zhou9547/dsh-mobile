@@ -19,6 +19,10 @@
 
 在 Android App 中连接公开隧道或自建入口时请选择 **远程访问**。公开受信任证书也可用手机浏览器配对；既有 frps 的自签入口需要 **0.4.6 或更高版本 App** 固定远程 CA。各通道仍要求 DSH Mobile 配对，不能直接暴露普通 DSH 或私有 HTTP 后端。
 
+## Fork 候选功能 / Fork candidate
+
+公网 IPv6 或自定义域名直连及自动私有证书配对，见 [IPv6 直连 HTTPS](IPV6_DIRECT.md) / [IPv6 direct HTTPS](IPV6_DIRECT.en.md)。需要此 fork 的新版 Android App。
+
 ## 页面与网络设置 / Page and network settings
 
 按需选择移动页面模块和受信任的局域网来源；这些设置不会创建 VPN，也不会自动刷新当前会话。

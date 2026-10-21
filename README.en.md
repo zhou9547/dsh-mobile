@@ -111,6 +111,8 @@ Download the official Android APK using the link above, or open the computer's p
 
 Registry-installed plugins check for updates when the desktop UI loads and show “Update plugin” beside the access-panel title when a newer release is available. Restart DSH after installation. The app download entry shows the latest version; local development packages are not overwritten, and Android does not check for or push app-version updates.
 
+> This fork adds IPv6 direct HTTPS, custom domains and automatic private-CA pairing. See the [IPv6 guide](docs/IPV6_DIRECT.en.md); use this fork’s updated App.
+
 ## Connection guide
 
 LAN and remote access are independent connections. Prefer LAN while the phone is near the computer for the lowest latency, and enable remote access only when leaving that network. The computer manages their switches and pairing authorizations separately; the Android app shows all paired computers together in its device list.

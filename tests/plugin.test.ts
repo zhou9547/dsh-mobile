@@ -582,7 +582,7 @@ describe('stock DSH lifecycle', () => {
     const load = vi.spyOn(JsonMobileAccessControlStore.prototype, 'load')
     const disable = vi.spyOn(JsonMobileAccessControlStore.prototype, 'disableIfPresent')
     await mount(false)
-    expect(disable).toHaveBeenCalledTimes(4)
+    expect(disable).toHaveBeenCalledTimes(5)
     expect(load).toHaveBeenCalledTimes(2)
   })
 

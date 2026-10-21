@@ -96,6 +96,8 @@ Verify configured time budgets through the public extension loader and recovery 
 
 Wait for resolved network state in browser fixtures, not a returned Promise's truthiness. Use a bounded asynchronous poll that checks the actual result, as in `scripts/smoke-extension-workers.mjs`; a completed `waitForFunction` call alone does not establish an asynchronous predicate became true. Keep source-content generation separate from runtime instance identity when checking recovery.
 
+The direct IPv6 provider terminates HTTPS in its own IPv6-only gateway and uses a private CA with fingerprint-bound `dsh2` pairing. Domain AAAA records and firewall reachability remain operator-managed; local ready status proves only listener startup. Keep App host classification and CA trust aligned with [the provider](../../../../src/ipv6-direct.ts), [shared host vectors](../../../../apps/mobile/contract/url-policy-cases.json) and [the IPv6 guide](../../../../docs/IPV6_DIRECT.en.md).
+
 ## Android and ADB
 
 Read `apps/mobile/README.md`, its Chinese counterpart, the manifest, `MainActivity.kt`, `NativeBridge.kt`, `WindowInsets.kt` and the affected policy tests. Before operating a device, identify the selected serial, package, versionCode, signer, WebView provider and current screen. A different connected device is not interchangeable evidence.

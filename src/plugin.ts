@@ -77,6 +77,7 @@ import { CaddyConfigStore } from './caddy-config.js'
 import { CaddyController } from './caddy.js'
 import { ManagedOriginController, JsonOriginModeStore, createVolatileRemoteControlStore } from './managed-origin.js'
 import { OriginConfigStore, parseOriginSettings, validateOriginListenPort, type OriginConfigurationStatus, type OriginSettings } from './origin-proxy-config.js'
+import { Ipv6ConfigStore, Ipv6Controller, ensureIpv6Certificate, ipv6GatewayConfig, type Ipv6Settings } from './ipv6-direct.js'
 import { OriginController } from './origin-proxy.js'
 import { PluginReleaseManager, releaseProfileDirectory } from './release-update.js'
 import { installMobileFileLogger } from './file-logger.js'
@@ -205,6 +206,9 @@ function mapAdminError(error: unknown): HttpError {
     'origin_settings_invalid', 'origin_public_origin_invalid', 'origin_listen_host_invalid',
     'origin_listen_port_invalid', 'origin_listen_port_reserved', 'origin_allowed_cidrs_invalid',
   ].includes(error.message)) return new HttpError(400, error.message)
+  if (error instanceof Error && error.message.startsWith('ipv6_')) {
+    return new HttpError(409, error.message)
+  }
   if (error instanceof Error && error.message.startsWith('origin_')) {
     return new HttpError(409, error.message)
   }
@@ -480,6 +484,7 @@ function remoteControlPayload(
         configuration: originConfiguration,
         component: caddyComponentStatus,
       },
+      ipv6: { bundled: true, running: providerStatuses.ipv6.enabled, state: providerStatuses.ipv6.state },
     },
   }
 }
@@ -532,6 +537,8 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
   await frpConfig.initialize()
   const originConfig = new OriginConfigStore(join(remoteDirectory, 'origin', 'config'), stateDirectory)
   await originConfig.initialize()
+  const ipv6Config = new Ipv6ConfigStore(join(remoteDirectory, 'ipv6'), stateDirectory)
+  await ipv6Config.initialize()
   const caddyComponent = new CaddyComponentManager({ stateDirectory })
   await caddyComponent.initialize()
   const caddyConfig = new CaddyConfigStore(stateDirectory)
@@ -721,6 +728,7 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
     return candidate
   }
   const tailscaleStore = new JsonMobileAccessControlStore(join(remoteDirectory, 'control.json'), false)
+  const ipv6Store = new JsonMobileAccessControlStore(join(remoteDirectory, 'ipv6', 'control.json'), false)
   const cpolarStore = new JsonMobileAccessControlStore(join(remoteDirectory, 'cpolar', 'control.json'), false)
   const cloudflaredStore = new JsonMobileAccessControlStore(join(remoteDirectory, 'cloudflared', 'control.json'), false)
   const frpStore = new JsonMobileAccessControlStore(join(remoteDirectory, 'frp', 'control.json'), false)
@@ -739,6 +747,21 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
     managed: caddyController,
   })
   const remoteControllers: Record<RemoteProvider, RemoteProviderController> = {
+    ipv6: new Ipv6Controller({
+      store: ipv6Store, config: ipv6Config,
+      createGateway: async (settings: Ipv6Settings) => {
+        const certificate = await ensureIpv6Certificate(ipv6Config, settings)
+        const resolved = ipv6GatewayConfig(template, settings, certificate, join(remoteDirectory, 'ipv6', 'devices.json'))
+        const candidate = new MobileAccessGateway(
+          resolved, new JsonDeviceStore(resolved.stateFile, resolved.maxDevices), mobileAccess,
+          upstreamLoginUrl, webSocketPaths, blockedUpgradePaths, undefined, clientModulePreferences,
+          entry => { logger.warn('auth failure %s', JSON.stringify(entry)) },
+          entry => { logger.warn('http failure %s', JSON.stringify(entry)) },
+        )
+        try { await candidate.start() } catch (error) { await candidate.close(); throw error }
+        return candidate
+      },
+    }),
     tailscale: new FunnelController({
       store: tailscaleStore,
       executable: funnelExecutable(import.meta.url),
@@ -802,6 +825,7 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
       cloudflared: remoteControllers.cloudflared.status(),
       frp: remoteControllers.frp.status(),
       origin: remoteControllers.origin.status(),
+      ipv6: remoteControllers.ipv6.status(),
     },
     cpolarComponent.status(),
     cloudflaredComponent.status(),
@@ -810,7 +834,7 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
     frpConfig.status(),
     originConfig.status(),
     caddyComponent.status(),
-  ), originMode: originController.mode(), caddyConfiguration: caddyConfig.status(), caddyState: caddyController.status() })
+  ), ipv6Configuration: ipv6Config.status(), originMode: originController.mode(), caddyConfiguration: caddyConfig.status(), caddyState: caddyController.status() })
   const lanPayload = (): Record<string, unknown> => ({
     ...(loaded.kind === 'unconfigured' ? {
       configured: preparedLanSetup !== undefined,
@@ -899,7 +923,18 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
         ...(remote.origin === undefined ? {} : { origin: remote.origin }),
         ...(remote.errorCode === undefined ? {} : { errorCode: remote.errorCode }),
       },
-    }, pinnedFrpProbe === undefined ? {} : { remote: pinnedFrpProbe }) as unknown as Record<string, unknown>
+    }, remoteProviders.selected === 'ipv6' && remote.origin !== undefined ? {
+      remote: async () => {
+        try {
+          const gateway = remoteControllers.ipv6.gateway()
+          if (gateway?.config.pairingCaFile === undefined) return { state: 'unreachable' as const }
+          await assertManagedParents(stateDirectory, gateway.config.pairingCaFile, 'ipv6')
+          const trustAnchorPem = await readFile(gateway.config.pairingCaFile, 'utf8')
+          const reachable = await defaultProbeDiscovery({ origin: remote.origin!, trustAnchorPem }, gateway.config.instanceId, AbortSignal.timeout(5_500))
+          return { state: reachable ? 'ready' as const : 'unreachable' as const }
+        } catch { return { state: 'unreachable' as const } }
+      },
+    } : pinnedFrpProbe === undefined ? {} : { remote: pinnedFrpProbe }) as unknown as Record<string, unknown>
   }
 
   const authenticateDesktopAdmin = (request: IncomingMessage): boolean => {
@@ -1042,10 +1077,19 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
         if (request.method === 'POST' && target.decodedPathname === `${LOCAL_ADMIN_PREFIX}/remote/provider`) {
           const body = await readJsonObject(request, 4096)
           if (body.provider !== 'tailscale' && body.provider !== 'cpolar' && body.provider !== 'cloudflared'
-            && body.provider !== 'frp' && body.provider !== 'origin') {
+            && body.provider !== 'frp' && body.provider !== 'origin' && body.provider !== 'ipv6') {
             throw new HttpError(400, 'bad_request')
           }
           await remoteProviders.select(body.provider)
+          sendJson(response, 200, remotePayload(), false)
+          return
+        }
+        if (request.method === 'POST' && target.decodedPathname === `${LOCAL_ADMIN_PREFIX}/remote/ipv6/configure`) {
+          const body = await readJsonObject(request, 4096)
+          await remoteProviders.mutateSelected('ipv6', async () => {
+            await ipv6Config.configure(body)
+            await remoteControllers.ipv6.reconnect()
+          })
           sendJson(response, 200, remotePayload(), false)
           return
         }
@@ -1390,7 +1434,7 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
           if (body.confirm !== true) throw new HttpError(400, 'bad_request')
           await remoteProviders.mutate(async controller => {
             await controller.reset()
-            await rm(remoteDeviceFile, { force: true })
+            await rm(remoteProviders.selected === 'ipv6' ? join(remoteDirectory, 'ipv6', 'devices.json') : remoteDeviceFile, { force: true })
           })
           sendJson(response, 200, remotePayload(), false)
           return
@@ -1474,6 +1518,7 @@ export async function apply(ctx: Context, config: PluginConfig): Promise<void> {
         cloudflared: cloudflaredStore,
         frp: frpStore,
         origin: originStore,
+        ipv6: ipv6Store,
       }
       const prepared = await prepareDisabledRemoteProviders(remoteProviders.selected, stores)
       for (const provider of REMOTE_PROVIDERS) {

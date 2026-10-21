@@ -775,3 +775,58 @@ Object.assign(MOBILE_CONTROL_MESSAGES.zh, {
   frpAttachToken: '复制含 Token 的 frpc.toml', frpAttachTokenCopied: '含 Token 的 frpc.toml（明文）已复制：它会留在系统剪贴板中，请勿粘贴到公开位置。', frpAttachTokenFailed: '复制含 Token 的 frpc.toml 失败：{error}',
   frpAttachTokenReenter: '请先重新输入共享 Token。插件不会把已保存的 Token 返回页面。', frpStep2TitleAttach: '2 · 核对既有服务器', frpStep2TextAttach: '核对既有 frps 配置并复制 VPS 操作清单；插件不会改动服务器。', frpStep4TextAttach: '保存本机 frpc 配置，并验证公开入口确实连接到这台电脑。', frpAppRequirementSelfSigned: '自签入口需要支持远程 CA 固定的 Android App；不具备此功能的旧版 App 无法使用。', frpConfigurationMissingAttach: '填写既有 frps 信息，在本机安装 frpc，然后保存并验证连接。', purgeFrpConfirmSelfSigned: '要停止 FRP 并删除本机 frpc、Token、配置、证书、私钥、身份记录、临时文件和日志吗？通过此自签入口配对的手机都需重新配对；VPS 不会改变。',
 })
+
+Object.assign(MOBILE_CONTROL_MESSAGES.en, {
+  "ipv6Name": "IPv6 direct HTTPS",
+  "ipv6Description": "Connect directly using a public IPv6 address or your own domain; private certificates are generated automatically.",
+  "ipv6PublicOrigin": "Public HTTPS URL (domain or IPv6, with port)",
+  "ipv6ListenHost": "Local IPv6 listener (:: for all IPv6 interfaces)",
+  "ipv6Help": "Point your domain’s AAAA record to this computer’s public IPv6, and allow the chosen TCP port through the router and computer firewall. The plugin generates a private CA and server certificate. Scan the pairing QR or paste the pairing link in the updated Android App: it verifies and saves the CA automatically, without system trust. Both networks need IPv6. Ready means the local listener is running; verify from a different network.",
+  "ipv6Save": "Generate certificate and start HTTPS",
+  "ipv6Ready": "IPv6 HTTPS listener is running. Generate a pairing QR/link below; verify access from another IPv6 network.",
+  "ipv6Starting": "Generating certificates and starting the IPv6 HTTPS listener…",
+  "ipv6NotConfigured": "Enter a public HTTPS URL and save to prepare IPv6 direct access.",
+  "ipv6Failed": "IPv6 HTTPS could not start. Check the URL, matching port, local IPv6, firewall and saved CA. Existing pairings and CA are retained."
+})
+
+Object.assign(MOBILE_CONTROL_MESSAGES.it, {
+  "ipv6Name": "HTTPS diretto IPv6",
+  "ipv6Description": "Connessione diretta con IPv6 pubblico o dominio personale; certificati privati generati automaticamente.",
+  "ipv6PublicOrigin": "URL HTTPS pubblico (dominio o IPv6, con porta)",
+  "ipv6ListenHost": "IPv6 locale (:: per tutte le interfacce IPv6)",
+  "ipv6Help": "Punta il record AAAA del dominio all’IPv6 pubblico del computer e consenti la porta TCP sul router e nel firewall. Il plugin genera una CA privata e il certificato server. Scansiona il QR o incolla il link nell’App Android aggiornata: la CA viene verificata e salvata senza fiducia di sistema. Entrambe le reti devono supportare IPv6. Pronto indica solo il listener locale; verifica da un’altra rete.",
+  "ipv6Save": "Genera certificato e avvia HTTPS",
+  "ipv6Ready": "Listener HTTPS IPv6 attivo. Genera il QR/link qui sotto e verifica da un’altra rete IPv6.",
+  "ipv6Starting": "Generazione dei certificati e avvio HTTPS IPv6…",
+  "ipv6NotConfigured": "Inserisci un URL HTTPS pubblico e salva per configurare IPv6.",
+  "ipv6Failed": "Avvio HTTPS IPv6 non riuscito. Controlla URL, porta, IPv6 locale, firewall e CA salvata. CA e abbinamenti sono conservati."
+})
+
+Object.assign(MOBILE_CONTROL_MESSAGES.zh, {
+  "ipv6Name": "IPv6 直连 HTTPS",
+  "ipv6Description": "使用公网 IPv6 或自定义域名直连，自动生成私有 HTTPS 证书。",
+  "ipv6PublicOrigin": "公网 HTTPS 地址（域名或 IPv6，可带端口）",
+  "ipv6ListenHost": "本机 IPv6 监听地址（:: 表示全部 IPv6 网卡）",
+  "ipv6Help": "请将域名 AAAA 记录指向本机公网 IPv6，并在路由器和电脑防火墙放行所选 TCP 端口。插件自动生成私有 CA 和服务器证书。更新后的 Android App 扫码或粘贴配对链接后自动校验并保存 CA，无需系统信任。手机和电脑网络都需支持 IPv6。“已就绪”仅表示本机正在监听，请再从外部网络验证。",
+  "ipv6Save": "生成证书并启动 HTTPS",
+  "ipv6Ready": "IPv6 HTTPS 已在本机监听。请在下方生成配对二维码／链接，并从其他 IPv6 网络验证连接。",
+  "ipv6Starting": "正在生成证书并启动 IPv6 HTTPS…",
+  "ipv6NotConfigured": "请填写公网 HTTPS 地址并保存，准备 IPv6 直连。",
+  "ipv6Failed": "IPv6 HTTPS 启动失败。请检查地址、端口、本机 IPv6、防火墙及保存的 CA。现有配对和 CA 会保留。"
+})
+
+Object.assign(MOBILE_CONTROL_MESSAGES.en, {
+  "ipv6CaInvalid": "The private CA is missing, expired or changed. Verify the saved certificate identity before rebuilding it and pairing again.",
+  "ipv6PortInUse": "The IPv6 TCP port is already in use. Choose another port in the HTTPS URL.",
+  "ipv6AddressUnavailable": "The selected IPv6 is not available on this computer. Check the interface or use ::."
+})
+Object.assign(MOBILE_CONTROL_MESSAGES.it, {
+  "ipv6CaInvalid": "CA privata mancante, scaduta o modificata. Verifica l’identità prima di ricrearla e abbinare di nuovo.",
+  "ipv6PortInUse": "Porta TCP IPv6 già occupata. Scegli un’altra porta nell’URL HTTPS.",
+  "ipv6AddressUnavailable": "IPv6 selezionato non disponibile sul computer. Controlla l’interfaccia o usa ::."
+})
+Object.assign(MOBILE_CONTROL_MESSAGES.zh, {
+  "ipv6CaInvalid": "私有 CA 缺失、过期或身份已改变。请核实保存的证书身份，确认后再重建并重新配对。",
+  "ipv6PortInUse": "IPv6 TCP 端口已被占用，请修改 HTTPS 地址中的端口。",
+  "ipv6AddressUnavailable": "本机没有所选 IPv6，请检查网卡或使用 :: 监听。"
+})

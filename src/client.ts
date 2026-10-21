@@ -33,11 +33,11 @@ export type { MobileControlLocale } from './client-messages.js'
  * host falls back to the built-in provider, so a missing name would silently
  * render another provider's wording instead of failing loudly.
  */
-export type MobileRemoteProvider = 'tailscale' | 'cpolar' | 'cloudflared' | 'frp' | 'origin'
+export type MobileRemoteProvider = 'tailscale' | 'cpolar' | 'cloudflared' | 'frp' | 'origin' | 'ipv6'
 
 /** Map a host-reported provider onto the UI union, defaulting to the built-in one. */
 export function parseMobileRemoteProvider(value: unknown): MobileRemoteProvider {
-  return value === 'cpolar' || value === 'cloudflared' || value === 'frp' || value === 'origin'
+  return value === 'cpolar' || value === 'cloudflared' || value === 'frp' || value === 'origin' || value === 'ipv6'
     ? value
     : 'tailscale'
 }
@@ -668,6 +668,14 @@ const ORIGIN_ERROR_MESSAGE_KEYS: Readonly<Record<string, string>> = {
 
 /** Provider failure codes shared by status, failed requests, and diagnostics. */
 const REMOTE_ERROR_MESSAGE_KEYS: Readonly<Record<string, string>> = {
+  ipv6_config_missing: 'ipv6NotConfigured',
+  ipv6_config_invalid: 'ipv6Failed',
+  ipv6_ca_invalid: 'ipv6CaInvalid',
+  ipv6_ca_changed: 'ipv6CaInvalid',
+  ipv6_certificate_invalid: 'ipv6CaInvalid',
+  ipv6_port_in_use: 'ipv6PortInUse',
+  ipv6_address_unavailable: 'ipv6AddressUnavailable',
+  ipv6_start_failed: 'ipv6Failed',
   funnel_permission_required: 'funnelPermission',
   funnel_https_required: 'funnelHttps',
   funnel_start_failed: 'funnelStart',
@@ -827,7 +835,7 @@ export function localizedDiagnosticEntryCopy(
   if (templates === undefined) return serverCopy
   const providerNames: Record<string, string> = {
     tailscale: 'Tailscale Funnel', cpolar: 'cpolar', cloudflared: 'cloudflared',
-    frp: t('frpName'), origin: t('originName'),
+    frp: t('frpName'), origin: t('originName'), ipv6: t('ipv6Name'),
   }
   const providerId = typeof facts.provider === 'string' ? facts.provider : ''
   const controllerCode = typeof facts.controllerCode === 'string' ? facts.controllerCode : ''
@@ -1119,7 +1127,11 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   const originChoiceName = element('strong'); originChoiceName.textContent = t('originName')
   const originChoiceDescription = element('span', 'dsh-mobile-control__provider-description'); originChoiceDescription.textContent = t('originDescription')
   originChoiceTop.append(originChoiceName); originChoice.append(originChoiceTop, originChoiceDescription)
-  selfHostedBody.append(frpChoice, originChoice); selfHosted.append(selfHostedSummary, selfHostedBody)
+  const ipv6Choice = element('button', 'dsh-mobile-control__provider is-ipv6'); ipv6Choice.type = 'button'; ipv6Choice.setAttribute('aria-pressed', 'false')
+  const ipv6ChoiceName = element('strong'); ipv6ChoiceName.textContent = t('ipv6Name')
+  const ipv6ChoiceDescription = element('span', 'dsh-mobile-control__provider-description'); ipv6ChoiceDescription.textContent = t('ipv6Description')
+  ipv6Choice.append(ipv6ChoiceName, ipv6ChoiceDescription)
+  selfHostedBody.append(ipv6Choice, frpChoice, originChoice); selfHosted.append(selfHostedSummary, selfHostedBody)
   providerSection.append(providerHeading, providerInfo, providerChoices, selfHosted)
   const frpSetup = element('section', 'dsh-mobile-control__frp-setup'); frpSetup.hidden = true
   const frpSetupTitle = element('h3', 'dsh-mobile-control__section-title'); frpSetupTitle.textContent = t('prepareFrp')
@@ -1230,6 +1242,20 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   const frpVerifySummary = element('summary'); frpVerifySummary.textContent = t('frpStep4Title')
   frpVerifyGroup.append(frpVerifySummary, frpStep4)
   frpSetup.append(frpSetupTitle, frpOverview, frpConnectionGroup, frpVpsGroup, frpComponentGroup, frpVerifyGroup, frpDetails)
+  const ipv6Setup = element('section', 'dsh-mobile-control__ipv6-setup'); ipv6Setup.hidden = true
+  const ipv6Title = element('h3', 'dsh-mobile-control__section-title'); ipv6Title.textContent = t('ipv6Name')
+  const ipv6Help = element('p', 'dsh-mobile-control__component-note'); ipv6Help.textContent = t('ipv6Help'); ipv6Help.id = 'dsh-mobile-ipv6-help'
+  const ipv6Fields = element('div', 'dsh-mobile-control__origin-fields')
+  const ipv6PublicLabel = element('label', 'dsh-mobile-control__field dsh-mobile-control__field--full'); ipv6PublicLabel.textContent = t('ipv6PublicOrigin')
+  const ipv6Public = element('input'); ipv6Public.type = 'url'; ipv6Public.required = true; ipv6Public.maxLength = 512; ipv6Public.placeholder = 'https://phone.example.com:3445'
+  const ipv6HostLabel = element('label', 'dsh-mobile-control__field dsh-mobile-control__field--full'); ipv6HostLabel.textContent = t('ipv6ListenHost')
+  const ipv6Host = element('input'); ipv6Host.type = 'text'; ipv6Host.value = '::'; ipv6Host.required = true; ipv6Host.maxLength = 45
+  for (const input of [ipv6Public, ipv6Host]) { input.autocomplete = 'off'; input.spellcheck = false; input.setAttribute('aria-describedby', ipv6Help.id) }
+  ipv6PublicLabel.append(ipv6Public); ipv6HostLabel.append(ipv6Host); ipv6Fields.append(ipv6PublicLabel, ipv6HostLabel)
+  const ipv6Save = element('button', 'dsh-mobile-control__primary'); ipv6Save.type = 'button'; ipv6Save.textContent = t('ipv6Save')
+  const ipv6Feedback = element('p', 'dsh-mobile-control__origin-feedback'); ipv6Feedback.setAttribute('role', 'status'); ipv6Feedback.setAttribute('aria-live', 'polite'); ipv6Feedback.hidden = true
+  const ipv6Actions = element('div', 'dsh-mobile-control__actions dsh-mobile-control__ipv6-actions'); ipv6Actions.append(ipv6Save)
+  ipv6Setup.append(ipv6Title, ipv6Help, ipv6Fields, ipv6Actions, ipv6Feedback)
   const originSetup = element('section', 'dsh-mobile-control__origin-setup'); originSetup.hidden = true
   const originSetupTitle = element('h3', 'dsh-mobile-control__section-title'); originSetupTitle.textContent = t('originHttpsTitle')
   const originHelp = element('p', 'dsh-mobile-control__component-note'); originHelp.id = 'dsh-mobile-origin-help'; originHelp.textContent = t('originHelp')
@@ -1308,7 +1334,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   const providerSetupMeta = element('div', 'dsh-mobile-control__stage-meta'); providerSetupMeta.append(providerSetupName, remoteStateBadge)
   providerSetupHeader.append(providerSetupHeading, providerSetupMeta)
   const providerSetupBody = element('div', 'dsh-mobile-control__provider-setup-body')
-  providerSetupBody.append(cpolarSetup, cloudflaredSetup, frpSetup, originSetup, tailscaleInfo)
+  providerSetupBody.append(cpolarSetup, cloudflaredSetup, frpSetup, originSetup, ipv6Setup, tailscaleInfo)
   const remoteAccess = element('div', 'dsh-mobile-control__access'); remoteAccess.hidden = true
   const remoteAccessLabel = element('span', 'dsh-mobile-control__access-label'); remoteAccessLabel.textContent = t('remoteAddress')
   const remoteAccessLink = element('a', 'dsh-mobile-control__access-link'); remoteAccessLink.target = '_blank'; remoteAccessLink.rel = 'noreferrer'; remoteAccess.append(remoteAccessLabel, remoteAccessLink)
@@ -1541,6 +1567,9 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   let cloudflaredHostnameDirty = false
   let cloudflaredPortDirty = false
   let originConfigured = false
+  let ipv6Configured = false
+  let ipv6FormDirty = false
+  let ipv6FormBusy = false
   let originFormDirty = false
   let originFormBusy = false
   let caddyFormBusy = false
@@ -1816,6 +1845,20 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     const cloudflared = remoteProvider === 'cloudflared'
     const frp = remoteProvider === 'frp'
     const origin = remoteProvider === 'origin'
+    const ipv6 = remoteProvider === 'ipv6'
+    ipv6Choice.classList.toggle('is-selected', ipv6)
+    ipv6Choice.setAttribute('aria-pressed', String(ipv6))
+    ipv6Choice.disabled = remoteProviderBusy
+    ipv6Setup.hidden = !ipv6
+    const ipv6Configuration = typeof data.ipv6Configuration === 'object' && data.ipv6Configuration !== null ? data.ipv6Configuration as Record<string, unknown> : {}
+    ipv6Configured = ipv6Configuration.configured === true
+    if (!ipv6FormDirty && !ipv6FormBusy) {
+      ipv6Public.value = typeof ipv6Configuration.publicOrigin === 'string' ? ipv6Configuration.publicOrigin : ''
+      ipv6Host.value = typeof ipv6Configuration.listenHost === 'string' ? ipv6Configuration.listenHost : '::'
+    }
+    for (const input of [ipv6Public, ipv6Host, ipv6Save]) input.disabled = remoteProviderBusy
+    ipv6Save.textContent = ipv6FormBusy ? t('saving') : t('ipv6Save')
+    ipv6Setup.setAttribute('aria-busy', String(ipv6FormBusy))
     // Current-connection copy follows the controller, never the unsaved form mode.
     const managedOrigin = origin && data.originMode === 'managed'
     const tailscale = remoteProvider === 'tailscale'
@@ -1833,7 +1876,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     cloudflaredChoice.tabIndex = cloudflared ? 0 : -1
     frpChoice.setAttribute('aria-pressed', String(frp))
     originChoice.setAttribute('aria-pressed', String(origin))
-    providerSetupName.textContent = cpolar ? 'cpolar' : cloudflared ? 'cloudflared' : frp ? t('frpName') : origin ? t(managedOrigin ? 'caddyName' : 'originName') : 'Tailscale Funnel'
+    providerSetupName.textContent = ipv6 ? t('ipv6Name') : cpolar ? 'cpolar' : cloudflared ? 'cloudflared' : frp ? t('frpName') : origin ? t(managedOrigin ? 'caddyName' : 'originName') : 'Tailscale Funnel'
     tailscaleChoice.disabled = remoteProviderBusy
     cpolarChoice.disabled = remoteProviderBusy
     cloudflaredChoice.disabled = remoteProviderBusy
@@ -1843,7 +1886,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     cloudflaredSetup.hidden = !cloudflared
     frpSetup.hidden = !frp
     originSetup.hidden = !origin
-    if (frp || origin) selfHosted.open = true
+    if (frp || origin || ipv6) selfHosted.open = true
     tailscaleInfo.hidden = !tailscale
     remoteReset.textContent = tailscale ? t('resetRemoteLogin') : t('resetRemoteDevices')
     const providers = data.providers !== null && typeof data.providers === 'object' ? data.providers as Record<string, unknown> : {}
@@ -2129,7 +2172,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     remoteSetupUrl = candidateSetupUrl !== '' ? candidateSetupUrl : (fallbackSetupUrls[errorCode] ?? '')
     const needsFunnelSetup = state === 'error' && remoteSetupUrl !== ''
     remoteReady = remoteRunning && state === 'ready' && remoteOrigin !== ''
-    selfHostedBadge.textContent = origin
+    selfHostedBadge.textContent = ipv6 ? t(remoteReady ? 'ready' : 'advanced') : origin
       ? managedOrigin ? t(remoteReady ? 'ready' : 'advanced') : originListening ? t('originBackendReady') : t('advanced')
       : frpConfigured && frpInstalled ? t('ready') : t('advanced')
     remoteStateBadge.classList.toggle('is-ready', remoteReady)
@@ -2149,17 +2192,17 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     remoteStatus.classList.toggle('is-running', remoteReady)
     const labels: Record<string, string> = {
       off: t('remoteOff'),
-      unavailable: cpolar ? t('remoteUnavailableCpolar')
+      unavailable: ipv6 ? t('ipv6NotConfigured') : cpolar ? t('remoteUnavailableCpolar')
         : cloudflared ? t('remoteUnavailableCloudflared')
           : frp ? t('remoteUnavailableFrp') : origin ? t('originUnavailable') : t('remoteUnavailableTailscale'),
-      starting: cpolar ? t('remoteStartingCpolar')
+      starting: ipv6 ? t('ipv6Starting') : cpolar ? t('remoteStartingCpolar')
         : cloudflared ? t('remoteStartingCloudflared')
           : frp ? t('remoteStartingFrp') : origin ? t('originStarting') : t('remoteStartingTailscale'),
       'needs-login': t('remoteNeedsLogin'),
       connecting: cpolar ? t('remoteConnectingCpolar')
         : cloudflared ? t('remoteConnectingCloudflared')
           : frp ? t('remoteConnectingFrp') : t('remoteConnectingTailscale'),
-      ready: origin ? t(managedOrigin ? 'caddyVerified' : 'originReady') : t('remoteReady'),
+      ready: ipv6 ? t('ipv6Ready') : origin ? t(managedOrigin ? 'caddyVerified' : 'originReady') : t('remoteReady'),
       error: t('remoteError'),
     }
     const errorLabels: Record<string, string> = translatedRemoteErrors()
@@ -2176,7 +2219,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     remoteSetupRetry.disabled = remoteReconnectBusy
     remoteToggle.textContent = remoteRunning ? t('disableRemote') : t('enableRemote')
     const originPrepared = data.originMode === 'managed' ? caddySupported && caddyInstalled && caddyConfiguration.configured === true : originConfigured && !caddyModeManagedSelected
-    const providerPrepared = cpolar ? cpolarInstalled && cpolarConfigured
+    const providerPrepared = ipv6 ? ipv6Configured : cpolar ? cpolarInstalled && cpolarConfigured
       : cloudflared ? cloudflaredInstalled
         : frp ? frpInstalled && frpConfigured : origin ? originPrepared : true
     remoteToggle.disabled = remoteProviderBusy || (!providerPrepared && !(origin && remoteRunning))
@@ -2229,7 +2272,7 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   })
   let remoteLoadInFlight = false
   const loadRemote = (): void => {
-    if (remoteLoadInFlight || originFormBusy || caddyFormBusy) return
+    if (remoteLoadInFlight || originFormBusy || caddyFormBusy || ipv6FormBusy) return
     const epoch = remoteSnapshotEpoch
     remoteLoadInFlight = true
     void controlRequestJson('/api/mobile-access/remote/control')
@@ -2247,9 +2290,10 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
     cloudflaredChoice.disabled = true
     frpChoice.disabled = true
     originChoice.disabled = true
+    ipv6Choice.disabled = true
     remoteStatus.textContent = provider === 'cpolar' ? t('switchingCpolar')
       : provider === 'cloudflared' ? t('switchingCloudflared')
-        : provider === 'frp' ? t('switchingFrp') : provider === 'origin' ? t('switchingOrigin') : t('switchingTailscale')
+        : provider === 'frp' ? t('switchingFrp') : provider === 'ipv6' ? t('ipv6Starting') : provider === 'origin' ? t('switchingOrigin') : t('switchingTailscale')
     void controlRequestJson('/api/mobile-access/remote/provider', { method: 'POST', body: JSON.stringify({ provider }) })
       .then(renderRemote, error => { remoteFailureText = remoteFailureTextFor(error, 'requestFailed'); remoteStatus.textContent = remoteFailureText })
       .finally(() => { remoteProviderBusy = false; loadRemote() })
@@ -2259,6 +2303,25 @@ function installControl(): { remove: () => void; toggle: () => void; isOpen: () 
   cloudflaredChoice.addEventListener('click', () => { chooseRemoteProvider('cloudflared') })
   frpChoice.addEventListener('click', () => { chooseRemoteProvider('frp') })
   originChoice.addEventListener('click', () => { chooseRemoteProvider('origin') })
+  ipv6Choice.addEventListener('click', () => { chooseRemoteProvider('ipv6') })
+  for (const input of [ipv6Public, ipv6Host]) input.addEventListener('input', () => { ipv6FormDirty = true })
+  ipv6Save.addEventListener('click', () => {
+    if (remoteProviderBusy || remoteProvider !== 'ipv6' || !ipv6Public.reportValidity() || !ipv6Host.reportValidity()) return
+    ipv6FormBusy = true
+    remoteProviderBusy = true
+    remoteSnapshotEpoch += 1
+    renderRemote(latestRemoteState)
+    ipv6Feedback.hidden = true
+    void controlRequestJson('/api/mobile-access/remote/ipv6/configure', {
+      method: 'POST', body: JSON.stringify({ publicOrigin: ipv6Public.value.trim(), listenHost: ipv6Host.value.trim() }),
+    }).then(data => {
+      ipv6FormDirty = false
+      renderRemote(data)
+      ipv6Feedback.hidden = false
+      ipv6Feedback.textContent = t(data.state === 'ready' ? 'ipv6Ready' : 'ipv6Failed')
+    }, () => { ipv6Feedback.hidden = false; ipv6Feedback.textContent = t('ipv6Failed') })
+      .finally(() => { ipv6FormBusy = false; remoteProviderBusy = false; renderRemote(latestRemoteState); loadRemote() })
+  })
   cloudflaredInstall.addEventListener('click', () => {
     if (remoteProviderBusy) return
     const accepted = window.confirm(t('installConfirmCloudflared', { size: cloudflaredDownloadSize }))
@@ -4391,6 +4454,7 @@ async function refreshCssLegacy(style: HTMLStyleElement, signal: AbortSignal, st
 
 /** Theme-aware desktop Mobile Access panel styles. */
 export const CONTROL_STYLES = `
+.dsh-mobile-control__ipv6-setup{display:grid;gap:12px;min-width:0}.dsh-mobile-control__ipv6-setup[hidden]{display:none}.dsh-mobile-control__view.is-remote .dsh-mobile-control__ipv6-setup>.dsh-mobile-control__actions{grid-template-columns:minmax(0,1fr)}.dsh-mobile-control__ipv6-setup .dsh-mobile-control__component-note{margin:0;overflow-wrap:anywhere}
 .dsh-mobile-control{position:fixed;z-index:1000;left:16px;bottom:112px;font:14px/1.45 system-ui;color:var(--dsw-alias-label-primary,#16181d)}
 .dsh-mobile-control__panel{box-sizing:border-box;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 140px);overflow-y:auto;padding:16px;border:1px solid var(--dsw-alias-border-l2,#e1e5eb);border-radius:18px;background:var(--dsw-alias-bg-layer-2,#fff);box-shadow:0 18px 50px rgb(15 23 42 / 18%)}
 .dsh-mobile-control__header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.dsh-mobile-control__panel h2{margin:0;font-size:17px;line-height:24px}.dsh-mobile-control__header-actions{display:flex;align-items:center;gap:2px}.dsh-mobile-control__update-plugin,.dsh-mobile-control__diagnostic-entry,.dsh-mobile-control__close{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;padding:0;border:0;border-radius:10px;background:transparent;color:inherit;cursor:pointer}.dsh-mobile-control__update-plugin,.dsh-mobile-control__diagnostic-entry{padding:0 8px;color:var(--dsw-alias-label-primary-bluish,#2563eb);font:650 12px/1 system-ui;white-space:nowrap}.dsh-mobile-control__update-plugin[hidden]{display:none}.dsh-mobile-control__update-plugin:disabled{cursor:wait;opacity:.55}.dsh-mobile-control__close{font-size:24px;line-height:1}.dsh-mobile-control__update-plugin:hover:not(:disabled),.dsh-mobile-control__diagnostic-entry:hover,.dsh-mobile-control__close:hover{background:var(--dsw-alias-interactive-bg-hover,#f1f3f6)}
