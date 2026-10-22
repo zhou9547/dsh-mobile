@@ -22,8 +22,8 @@ android {
         applicationId = "io.github.sayach.dshmobile"
         minSdk = 29
         targetSdk = 36
-        versionCode = 82
-        versionName = "0.6.6"
+        versionCode = 83
+        versionName = "0.6.7"
     }
 
     signingConfigs {
@@ -66,6 +66,7 @@ android {
     }
 
     sourceSets.getByName("test").resources.srcDir("../../contract")
+    testOptions.unitTests.isIncludeAndroidResources = true
 }
 
 dependencies {
@@ -73,5 +74,6 @@ dependencies {
     implementation("androidx.webkit:webkit:1.17.1")
     implementation("com.google.zxing:core:3.5.4")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.16")
     testImplementation("org.json:json:20260814")
 }

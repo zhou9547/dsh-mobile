@@ -46,6 +46,7 @@ jobs:
           path: |
             apps/mobile/android/app/build/reports/
             apps/mobile/android/app/build/test-results/
+            apps/mobile/android/app/build/icon-ui-evidence/
           if-no-files-found: ignore
 
   plugin:

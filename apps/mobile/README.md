@@ -8,11 +8,12 @@ The current stable app is **0.6.5** (build 81). The npm plugin and Android App h
 
 Android 10 or later is supported. The local iOS experiment is not a published or supported client.
 
-## 0.6.6 candidate changes
+## 0.6.7 candidate changes
 
 - Recognize public IPv6 remote entries; custom domains use existing remote pairing.
 - Scanning/pasting a pairing link verifies and saves its private CA without system trust; certificate validity, host and fingerprint checks remain required.
 - This fork candidate is built by Actions; see the [IPv6 guide](../../docs/IPV6_DIRECT.en.md).
+- App icon choices show their real artwork. Local image selection, drag/zoom/rotation cropping and a custom desktop shortcut are available.
 
 ## Install and pair
 
@@ -30,7 +31,7 @@ The **Paired computers** list shows names, connection types, addresses, reachabi
 | Location | Setting or action |
 | --- | --- |
 | Device list → Settings → Startup behavior | **Open DSH directly** (default) selects the last-used eligible pairing, even when several computers are saved. **Show device list** asks you to choose at each launch. |
-| Device list → Settings → App icon | Choose the mascot or one of six whale-mark colors without changing package identity or paired data. |
+| Device list → Settings → App icon | Preview and select seven built-in icons; open **Custom desktop icon** to choose, crop and pin your own image. |
 | DSH page → Settings → General → Switch computer | Return to the paired-computer list. Holding the top-left drawer toggle provides another entry. These actions belong inside the app's webpage, not the device-list settings. |
 | <a id="062-update"></a>DSH page → Settings → General → Page zoom | App 0.6.2+ with plugin 0.6.3+: 80–125%, reset to 100%. Saved app-wide without reloading the conversation. |
 | DSH page → Settings → General → Mobile font size | Default 16px, range 12–32px; saved for the current address. Supported themes also expose code size and body/code font choices. Editable inputs retain a 16px minimum; terminal fonts remain DSH-owned. |
@@ -38,6 +39,8 @@ The **Paired computers** list shows names, connection types, addresses, reachabi
 | DSH page → Settings → General → Task notifications | Request Android notification access or open the app's system notification settings. See [notification limits](#notifications-and-extensions). |
 
 Page zoom changes the whole page and is separate from per-address text preferences. App-only actions are shown only when the native bridge supports them. Native screens follow the Android system language in Simplified Chinese, English or Italian; webpage copy follows DSH's selected locale. DSH does not currently expose Italian.
+
+Custom icons accept PNG, JPEG and WebP up to 20 MB and 100 megapixels. Processing stays on the phone, with no server upload or broad photo-library permission. Drag, pinch, use zoom buttons, rotate or reset the crop; round/square masks are previews only. Saved images remain editable, and leaving offers to discard unsaved changes. **Add / update desktop icon** requests system confirmation for a new shortcut, or updates the existing shortcut with the same ID. The app drawer retains a built-in icon; launchers may show a badge or another mask. Unsupported launchers show a message. Cancelling the system confirmation preserves the saved crop, the original app entry and all computer pairings.
 
 Deleting a local record removes its saved token and pinned CA, not the computer's authorization or every short-lived WebView cookie. Use **Mobile Access** on the computer to revoke access immediately. A full Android clear-app-data reset removes all pairings and web data and is not a normal reconnection step.
 

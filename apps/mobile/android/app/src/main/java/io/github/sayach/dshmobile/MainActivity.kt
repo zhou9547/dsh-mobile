@@ -1193,6 +1193,10 @@ class MainActivity : Activity() {
             }
             preferences.edit().putString(PREFERENCE_APP_ICON, icon).apply()
             deviceListStatus?.setText(R.string.icon_settings_saved)
+            ioExecutor.execute {
+                try { CustomLauncherIcon.refreshPinned(applicationContext) }
+                catch (_: Exception) { /* A custom shortcut refresh must not undo a valid built-in switch. */ }
+            }
         } catch (error: Exception) {
             // Package-manager failure is reported without persisting an unconfirmed selection.
             Toast.makeText(this, R.string.icon_settings_failed, Toast.LENGTH_LONG).show()
@@ -1211,11 +1215,15 @@ class MainActivity : Activity() {
             getString(R.string.icon_choice_official_whale_white),
         )
         val selected = keys.indexOf(currentAppIcon()).coerceAtLeast(0)
-        AlertDialog.Builder(this)
+        val iconContext = android.view.ContextThemeWrapper(this, R.style.AppTheme)
+        AlertDialog.Builder(iconContext)
             .setTitle(R.string.icon_settings)
-            .setSingleChoiceItems(labels, selected) { dialog, which ->
+            .setSingleChoiceItems(LauncherIconAdapter(iconContext, labels), selected) { dialog, which ->
                 dialog.dismiss()
                 applyAppIcon(keys[which])
+            }
+            .setPositiveButton(R.string.custom_icon_title) { _, _ ->
+                startActivity(Intent(this, IconEditorActivity::class.java))
             }
             .setNegativeButton(R.string.cancel, null)
             .show()

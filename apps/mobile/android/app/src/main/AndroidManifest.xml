@@ -132,6 +132,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+        <activity android:name=".IconEditorActivity" android:exported="false" />
+        <receiver android:name=".IconPinnedReceiver" android:exported="false" />
         <activity
             android:name=".ScanActivity"
             android:exported="false"
