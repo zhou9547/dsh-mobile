@@ -24,6 +24,7 @@ android {
         targetSdk = 36
         versionCode = 83
         versionName = "0.6.7"
+        manifestPlaceholders["launcherAppLabel"] = "@string/app_name"
     }
 
     signingConfigs {
@@ -38,6 +39,13 @@ android {
     }
 
     buildTypes {
+        create("iconTest") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".icontest"
+            versionNameSuffix = "-icon-test"
+            manifestPlaceholders["launcherAppLabel"] = "DSH Mobile Icons"
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = true
             if (releaseSigningConfigured) signingConfig = signingConfigs.getByName("release")

@@ -14,6 +14,7 @@ DeepSeek Harness 是这个社区维护的 Android WebView App 的显示名称。
 - 扫码或粘贴配对链接后自动验证并保存私有 CA，无需系统信任；保留证书有效期、地址匹配和指纹校验。
 - 此候选由 fork 的 Actions 编译；下载与使用见 [IPv6 直连指南](../../docs/IPV6_DIRECT.md)。
 - 应用图标列表显示每项的实际预览；新增本机选图、拖动／缩放／旋转裁剪和自定义桌面快捷方式。
+- Actions 同时提供“DSH Mobile Icons”并行测试包（包名 `io.github.sayach.dshmobile.icontest`）。它可与旧 App 共存，数据独立，需重新配对电脑；不覆盖旧版，也不读取或删除旧配对。Debug 临时签名不同的原包名 APK 不能原位覆盖升级。
 
 ## 安装与配对
 

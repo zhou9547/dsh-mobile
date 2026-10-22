@@ -14,6 +14,7 @@ Android 10 or later is supported. The local iOS experiment is not a published or
 - Scanning/pasting a pairing link verifies and saves its private CA without system trust; certificate validity, host and fingerprint checks remain required.
 - This fork candidate is built by Actions; see the [IPv6 guide](../../docs/IPV6_DIRECT.en.md).
 - App icon choices show their real artwork. Local image selection, drag/zoom/rotation cropping and a custom desktop shortcut are available.
+- Actions also provides **DSH Mobile Icons**, a parallel test APK (`io.github.sayach.dshmobile.icontest`). It installs alongside the old app with separate data and requires pairing computers again; it neither replaces the old app nor reads/deletes its pairings. Original-package Debug APKs with different temporary signing keys cannot upgrade each other in place.
 
 ## Install and pair
 

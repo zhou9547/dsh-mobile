@@ -101,8 +101,8 @@ internal object CustomLauncherIcon {
 
     private fun shortcut(context: Context, bitmap: Bitmap): ShortcutInfo =
         ShortcutInfo.Builder(context, SHORTCUT_ID)
-            .setShortLabel(context.getString(R.string.app_name))
-            .setLongLabel(context.getString(R.string.app_name))
+            .setShortLabel(context.applicationInfo.loadLabel(context.packageManager))
+            .setLongLabel(context.applicationInfo.loadLabel(context.packageManager))
             .setActivity(enabledLauncher(context))
             .setIcon(Icon.createWithAdaptiveBitmap(bitmap))
             .setIntent(Intent(context, MainActivity::class.java).apply {
