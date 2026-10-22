@@ -27,7 +27,7 @@ internal object CustomLauncherIcon {
 
     private fun file(context: Context) = AtomicFile(File(context.filesDir, "custom-launcher-icon.zip"))
 
-    fun save(context: Context, source: Bitmap, crop: Bitmap, geometry: IconCropGeometry) {
+    @Synchronized fun save(context: Context, source: Bitmap, crop: Bitmap, geometry: IconCropGeometry) {
         val atomic = file(context)
         val stream = atomic.startWrite()
         try {
@@ -72,7 +72,7 @@ internal object CustomLauncherIcon {
         return result
     }
 
-    fun load(context: Context): Saved? = try {
+    @Synchronized fun load(context: Context): Saved? = try {
         val data = entries(context)
         fun decode(name: String): Bitmap {
             val bytes = requireNotNull(data[name])

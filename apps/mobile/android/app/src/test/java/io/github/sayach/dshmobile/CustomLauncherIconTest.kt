@@ -99,6 +99,18 @@ class CustomLauncherIconTest {
         writeEvidence(parent, "built-in-previews", 390, 600)
     }
 
+    @Test fun failedImageEncodingRollsBackToThePreviousSavedIcon() {
+        val view = IconCropView(context).apply { setImage(image()) }
+        CustomLauncherIcon.save(context, view.bitmap!!, view.export(), view.geometry!!)
+        val invalid = image().apply { recycle() }
+        assertThrows(IllegalStateException::class.java) {
+            CustomLauncherIcon.save(context, invalid, view.export(), view.geometry!!)
+        }
+        val restored = CustomLauncherIcon.load(context)!!
+        assertEquals(200, restored.source.width)
+        assertEquals(Color.RED, restored.source.getPixel(10, 10))
+    }
+
     @Test @Config(sdk = [35], qualifiers = "night")
     fun nightModePreviewsRemainVisible() { everyBuiltInChoiceLoadsItsManifestArtworkAndShowsSelection() }
 
