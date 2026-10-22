@@ -1,8 +1,8 @@
-# DeepSeek Harness Android App
+# DSH Mobile Android App
 
 [English](README.md) · [返回项目首页](../../README.md)
 
-DeepSeek Harness 是这个社区维护的 Android WebView App 的显示名称。它直接打开插件提供的已认证 HTTPS 页面，不打包另一套 DSH 前端；App 与手机浏览器获得相同的 DSH 功能，以及电脑端配置的移动页面定制。
+本 fork 的 Android 显示名称为 **DSH Mobile**；上游正式版仍名为 DeepSeek Harness。这个社区维护的 WebView App 直接打开插件提供的已认证 HTTPS 页面，不打包另一套 DSH 前端；App 与手机浏览器获得相同的 DSH 功能，以及电脑端配置的移动页面定制。
 
 当前正式 App 为 **0.6.5**；构建号为 81。npm 插件与 Android App 独立编号、独立更新；插件升级不代表需要重新安装 APK。此次改进见 [0.6.5 更新](#065-更新)。
 
@@ -14,7 +14,7 @@ DeepSeek Harness 是这个社区维护的 Android WebView App 的显示名称。
 - 扫码或粘贴配对链接后自动验证并保存私有 CA，无需系统信任；保留证书有效期、地址匹配和指纹校验。
 - 此候选由 fork 的 Actions 编译；下载与使用见 [IPv6 直连指南](../../docs/IPV6_DIRECT.md)。
 - 应用图标列表显示每项的实际预览；新增本机选图、拖动／缩放／旋转裁剪和自定义桌面快捷方式。
-- Actions 同时提供“DSH Mobile Icons”并行测试包（包名 `io.github.sayach.dshmobile.icontest`）。它可与旧 App 共存，数据独立，需重新配对电脑；不覆盖旧版，也不读取或删除旧配对。Debug 临时签名不同的原包名 APK 不能原位覆盖升级。
+- Actions 同时提供“DSH Mobile”并行测试包（包名 `io.github.sayach.dshmobile.icontest`）。它可与旧 App 共存，数据独立，需重新配对电脑；不覆盖旧版，也不读取或删除旧配对。Debug 临时签名不同的原包名 APK 不能原位覆盖升级。
 
 ## 安装与配对
 

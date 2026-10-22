@@ -43,7 +43,6 @@ android {
             initWith(getByName("debug"))
             applicationIdSuffix = ".icontest"
             versionNameSuffix = "-icon-test"
-            manifestPlaceholders["launcherAppLabel"] = "DSH Mobile Icons"
             matchingFallbacks += listOf("debug")
         }
         release {

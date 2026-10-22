@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DeepSeek Harness</string>
+    <string name="app_name">DSH Mobile</string>
     <string name="connection_center_title">Scegli una connessione</string>
     <string name="connection_center_description">L\'accesso locale e quello remoto sono configurati separatamente. Scegli come collegare questo telefono al computer.</string>
     <string name="background_restore_running">Ripristino dell\'ultima connessione in background. Puoi già scegliere una connessione qui sotto.</string>

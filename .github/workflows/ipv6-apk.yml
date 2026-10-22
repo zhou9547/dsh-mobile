@@ -41,11 +41,11 @@ jobs:
         run: |
           cp apps/mobile/android/app/build/outputs/apk/iconTest/*.apk apk/dsh-mobile-icons-parallel-debug.apk
           sha256sum apk/dsh-mobile-icons-parallel-debug.apk > apk/dsh-mobile-icons-parallel-debug.apk.sha256
-          printf '\nParallel build: io.github.sayach.dshmobile.icontest, display name DSH Mobile Icons. Installs alongside the old App; pair computers again in this separate App.\n' >> apk/BUILD.txt
+          printf '\nParallel build: io.github.sayach.dshmobile.icontest, display name DSH Mobile. Installs alongside the old App; pair computers again in this separate App.\n' >> apk/BUILD.txt
           aapt="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
           "$aapt" dump badging apk/dsh-mobile-icons-parallel-debug.apk > apk/PARALLEL.txt
           grep -F "package: name='io.github.sayach.dshmobile.icontest'" apk/PARALLEL.txt
-          grep -F "application-label:'DSH Mobile Icons'" apk/PARALLEL.txt
+          grep -F "application-label:'DSH Mobile'" apk/PARALLEL.txt
           apksigner="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           "$apksigner" verify --verbose --print-certs apk/dsh-mobile-icons-parallel-debug.apk >> apk/PARALLEL.txt
       - uses: actions/upload-artifact@v7

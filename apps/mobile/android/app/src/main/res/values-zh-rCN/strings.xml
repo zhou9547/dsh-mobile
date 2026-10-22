@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">DeepSeek Harness</string>
+    <string name="app_name">DSH Mobile</string>
     <string name="connection_center_title">选择连接方式</string>
     <string name="connection_center_description">局域网与远程访问彼此独立。请选择手机这次连接电脑的方式。</string>
     <string name="background_restore_running">正在后台恢复上次连接；你也可以直接选择下面的连接方式。</string>
