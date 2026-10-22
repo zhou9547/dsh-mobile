@@ -8,7 +8,6 @@ import android.graphics.ImageDecoder
 import android.graphics.Matrix
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
@@ -132,6 +131,11 @@ class IconEditorActivity : Activity() {
         setBusy(true)
         val owner = ++generation
         executor.execute {
+            // Remove only old editor-owned temporary files left by a killed process.
+            cacheDir.listFiles()?.filter {
+                it.name.matches(Regex("icon-(edit-[a-f0-9-]+\\.png|input-[a-f0-9-]+)")) &&
+                    it != candidate && System.currentTimeMillis() - it.lastModified() > 7 * 24 * 60 * 60 * 1000L
+            }?.forEach { it.delete() }
             var generated: File? = null
             val result = runCatching {
                 if (candidate != null) {

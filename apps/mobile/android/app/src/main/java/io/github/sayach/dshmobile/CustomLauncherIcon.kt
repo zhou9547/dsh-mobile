@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
@@ -131,8 +130,10 @@ internal object CustomLauncherIcon {
     fun refreshPinned(context: Context) {
         val manager = context.getSystemService(ShortcutManager::class.java) ?: return
         if (manager.pinnedShortcuts.none { it.id == SHORTCUT_ID }) return
-        val saved = load(context) ?: return
-        check(manager.updateShortcuts(listOf(shortcut(context, saved.crop))))
+        // A partial update preserves the last explicitly pinned artwork, including when a newer
+        // draft has only been saved locally. No image decoding is needed for an alias change.
+        check(manager.updateShortcuts(listOf(ShortcutInfo.Builder(context, SHORTCUT_ID)
+            .setActivity(enabledLauncher(context)).build())))
         manager.enableShortcuts(listOf(SHORTCUT_ID))
     }
 }

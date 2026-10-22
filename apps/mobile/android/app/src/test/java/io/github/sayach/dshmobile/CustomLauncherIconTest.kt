@@ -2,6 +2,8 @@ package io.github.sayach.dshmobile
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
@@ -9,12 +11,15 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Looper
+import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import java.io.File
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -28,7 +33,7 @@ import org.robolectric.annotation.GraphicsMode
 
 /** Real Android resources/bitmap rendering in a cloud JVM; not a physical launcher test. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [35])
+@Config(sdk = [29, 35])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class CustomLauncherIconTest {
     private val context: Context get() = RuntimeEnvironment.getApplication()
@@ -72,8 +77,13 @@ class CustomLauncherIconTest {
     }
 
     @Test fun everyBuiltInChoiceLoadsItsManifestArtworkAndShowsSelection() {
-        val adapter = LauncherIconAdapter(context, Array(7) { "Choice $it" })
+        val labels = arrayOf(R.string.icon_choice_whale_girl, R.string.icon_choice_official_whale,
+            R.string.icon_choice_official_whale_dark, R.string.icon_choice_official_whale_teal,
+            R.string.icon_choice_official_whale_mono, R.string.icon_choice_official_whale_black,
+            R.string.icon_choice_official_whale_white).map { context.getString(it) }.toTypedArray()
+        val adapter = LauncherIconAdapter(context, labels)
         val parent = LinearLayout(context)
+        parent.orientation = LinearLayout.VERTICAL
         assertEquals(7, adapter.count)
         for (index in 0 until adapter.count) {
             val row = adapter.getView(index, null, parent) as ViewGroup
@@ -82,8 +92,13 @@ class CustomLauncherIconTest {
             assertTrue(row.isChecked)
             row.isChecked = false
             assertFalse(row.isChecked)
+            parent.addView(row)
         }
+        writeEvidence(parent, "built-in-previews", 390, 600)
     }
+
+    @Test @Config(sdk = [35], qualifiers = "night")
+    fun nightModePreviewsRemainVisible() { everyBuiltInChoiceLoadsItsManifestArtworkAndShowsSelection() }
 
     @Test fun repeatedPinUpdatesOneStableShortcutWithAnExplicitAppIntent() {
         val manager = context.getSystemService(ShortcutManager::class.java)
@@ -120,18 +135,80 @@ class CustomLauncherIconTest {
         assertEquals(1.25f, crop.geometry!!.zoom, 0.001f)
         assertEquals(200, CustomLauncherIcon.load(context)!!.source.width)
         // Retain a genuine Android-rendered settings preview as cloud test evidence.
-        val out = File(System.getProperty("user.dir"), "build/icon-ui-evidence")
-        out.mkdirs()
-        crop.measure(View.MeasureSpec.makeMeasureSpec(360, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(300, View.MeasureSpec.EXACTLY))
-        crop.layout(0, 0, 360, 300)
-        val screenshot = Bitmap.createBitmap(360, 300, Bitmap.Config.ARGB_8888)
-        crop.draw(Canvas(screenshot))
-        File(out, "crop-preview.png").outputStream().use { screenshot.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        writeEvidence(crop, "crop-preview", 360, 300)
         controller.pause().stop().destroy()
     }
 
+    @Test fun pickerCancellationAndDamagedImagesPreserveTheCurrentImage() {
+        val initial = IconCropView(context).apply { setImage(image()) }
+        CustomLauncherIcon.save(context, initial.bitmap!!, initial.export(), initial.geometry!!)
+        val controller = Robolectric.buildActivity(IconEditorActivity::class.java).setup()
+        val activity = controller.get()
+        waitForImage(activity)
+        val before = cropView(activity.window.decorView)!!.bitmap
+        deliverImage(activity, Activity.RESULT_CANCELED, null)
+        assertSame(before, cropView(activity.window.decorView)!!.bitmap)
+        val uri = Uri.parse("content://icon-test/damaged")
+        shadowOf(context.contentResolver).registerInputStream(uri, ByteArrayInputStream("bad image".toByteArray()))
+        deliverImage(activity, Activity.RESULT_OK, Intent().setData(uri))
+        waitForImage(activity)
+        assertSame(before, cropView(activity.window.decorView)!!.bitmap)
+        assertEquals(200, CustomLauncherIcon.load(context)!!.source.width)
+        controller.pause().stop().destroy()
+    }
+
+    @Test fun selectingAnExifRotatedJpegCorrectsOrientationAndDoesNotSaveBeforeConfirmation() {
+        val controller = Robolectric.buildActivity(IconEditorActivity::class.java).setup()
+        val activity = controller.get()
+        waitUntilIdle(activity)
+        val bytes = ByteArrayOutputStream().also { image().compress(Bitmap.CompressFormat.JPEG, 95, it) }.toByteArray()
+        // EXIF little-endian TIFF, one orientation=6 entry (90 degrees clockwise).
+        val exif = intArrayOf(255,225,0,34,69,120,105,102,0,0,73,73,42,0,8,0,0,0,
+            1,0,18,1,3,0,1,0,0,0,6,0,0,0,0,0,0,0).map { it.toByte() }.toByteArray()
+        val rotated = bytes.copyOfRange(0, 2) + exif + bytes.copyOfRange(2, bytes.size)
+        val uri = Uri.parse("content://icon-test/rotated.jpg")
+        shadowOf(context.contentResolver).registerInputStream(uri, ByteArrayInputStream(rotated))
+        deliverImage(activity, Activity.RESULT_OK, Intent().setData(uri))
+        waitForImage(activity)
+        val crop = cropView(activity.window.decorView)!!
+        assertEquals(100, crop.bitmap!!.width)
+        assertEquals(200, crop.bitmap!!.height)
+        assertNull(CustomLauncherIcon.load(context))
+        button(activity.window.decorView, context.getString(R.string.custom_icon_save)).performClick()
+        waitForImage(activity)
+        assertEquals(100, CustomLauncherIcon.load(context)!!.source.width)
+        controller.pause().stop().destroy()
+    }
+
+    private fun deliverImage(activity: IconEditorActivity, result: Int, intent: Intent?) {
+        IconEditorActivity::class.java.getDeclaredMethod("onActivityResult", Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType, Intent::class.java).apply { isAccessible = true }
+            .invoke(activity, 7301, result, intent)
+    }
+
+    private fun writeEvidence(view: View, name: String, width: Int, height: Int) {
+        val out = File(System.getProperty("user.dir"), "build/icon-ui-evidence").apply { mkdirs() }
+        val density = context.resources.displayMetrics.density
+        val pixelsWide = (width * density).toInt()
+        val pixelsHigh = (height * density).toInt()
+        view.measure(View.MeasureSpec.makeMeasureSpec(pixelsWide, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(pixelsHigh, View.MeasureSpec.EXACTLY))
+        view.layout(0, 0, pixelsWide, pixelsHigh)
+        val screenshot = Bitmap.createBitmap(pixelsWide, pixelsHigh, Bitmap.Config.ARGB_8888)
+        view.draw(Canvas(screenshot))
+        val night = context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        File(out, "$name-api${android.os.Build.VERSION.SDK_INT}-${if (night) "night" else "day"}.png").outputStream().use {
+            screenshot.compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+    }
+
     private fun waitForImage(activity: IconEditorActivity) {
+        waitUntilIdle(activity)
+        assertNotNull(cropView(activity.window.decorView)?.bitmap)
+    }
+
+    private fun waitUntilIdle(activity: IconEditorActivity) {
         val deadline = System.nanoTime() + 10_000_000_000L
         val busy = IconEditorActivity::class.java.getDeclaredField("busy").apply { isAccessible = true }
         while (busy.getBoolean(activity) && System.nanoTime() < deadline) {
@@ -139,7 +216,6 @@ class CustomLauncherIconTest {
             shadowOf(Looper.getMainLooper()).idle()
         }
         assertFalse(busy.getBoolean(activity))
-        assertNotNull(cropView(activity.window.decorView)?.bitmap)
     }
 
     private fun cropView(view: View): IconCropView? {
