@@ -221,7 +221,7 @@ class IconEditorActivity : Activity() {
 
     /** ImageDecoder applies EXIF orientation before returning a bounded software bitmap. */
     private fun decode(file: File): Bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, info, _ ->
-        require(info.mimeType in listOf("image/png", "image/jpeg", "image/webp"))
+        require(info.mimeType in listOf("image/png", "image/jpeg", "image/webp")) { "Unsupported image format: ${info.mimeType}" }
         val width = info.size.width
         val height = info.size.height
         require(width > 0 && height > 0 && width.toLong() * height <= 100_000_000L)

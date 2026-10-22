@@ -157,6 +157,20 @@ class CustomLauncherIconTest {
         controller.pause().stop().destroy()
     }
 
+    @Test fun imageDecoderAcceptsANormalPngFromPrivateCache() {
+        val controller = Robolectric.buildActivity(IconEditorActivity::class.java).setup()
+        val activity = controller.get()
+        waitUntilIdle(activity)
+        val file = File(context.cacheDir, "decoder-fixture.png")
+        file.outputStream().use { image().compress(Bitmap.CompressFormat.PNG, 100, it) }
+        try {
+            val decoded = IconEditorActivity::class.java.getDeclaredMethod("decode", File::class.java)
+                .apply { isAccessible = true }.invoke(activity, file) as Bitmap
+            assertEquals(200, decoded.width)
+            assertEquals(100, decoded.height)
+        } finally { file.delete(); controller.pause().stop().destroy() }
+    }
+
     @Test fun selectingAnExifRotatedJpegCorrectsOrientationAndDoesNotSaveBeforeConfirmation() {
         val controller = Robolectric.buildActivity(IconEditorActivity::class.java).setup()
         val activity = controller.get()
