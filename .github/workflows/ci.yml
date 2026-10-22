@@ -315,7 +315,7 @@ jobs:
         run: sdkmanager "platforms;android-36"
       - uses: gradle/actions/setup-gradle@v6
       - name: Test and assemble
-        run: bash ./gradlew --no-daemon lintDebug testDebugUnitTest assembleDebug -x lintAnalyzeDebugUnitTest -x lintAnalyzeDebugAndroidTest
+        run: bash ./gradlew --no-daemon lintDebug testDebugUnitTest testIconUi assembleDebug -x lintAnalyzeDebugUnitTest -x lintAnalyzeDebugAndroidTest
         working-directory: apps/mobile/android
       - uses: actions/upload-artifact@v7
         with:
