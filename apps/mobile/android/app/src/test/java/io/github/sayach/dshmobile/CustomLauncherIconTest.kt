@@ -84,6 +84,7 @@ class CustomLauncherIconTest {
         val adapter = LauncherIconAdapter(context, labels)
         val parent = LinearLayout(context)
         parent.orientation = LinearLayout.VERTICAL
+        parent.setBackgroundColor(context.getColor(R.color.app_surface))
         assertEquals(7, adapter.count)
         for (index in 0 until adapter.count) {
             val row = adapter.getView(index, null, parent) as ViewGroup
@@ -94,6 +95,7 @@ class CustomLauncherIconTest {
             assertFalse(row.isChecked)
             parent.addView(row)
         }
+        (parent.getChildAt(0) as android.widget.Checkable).isChecked = true
         writeEvidence(parent, "built-in-previews", 390, 600)
     }
 

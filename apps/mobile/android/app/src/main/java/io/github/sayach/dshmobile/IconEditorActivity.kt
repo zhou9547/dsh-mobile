@@ -15,6 +15,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import java.io.File
+import java.io.FileInputStream
+import java.nio.channels.FileChannel
 import java.util.UUID
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
@@ -220,15 +222,23 @@ class IconEditorActivity : Activity() {
     }
 
     /** ImageDecoder applies EXIF orientation before returning a bounded software bitmap. */
-    private fun decode(file: File): Bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(file)) { decoder, info, _ ->
-        require(info.mimeType in listOf("image/png", "image/jpeg", "image/webp")) { "Unsupported image format: ${info.mimeType}" }
-        val width = info.size.width
-        val height = info.size.height
-        require(width > 0 && height > 0 && width.toLong() * height <= 100_000_000L)
-        val scale = minOf(1.0, 2048.0 / maxOf(width, height))
-        decoder.setTargetSize(maxOf(1, (width * scale).toInt()), maxOf(1, (height * scale).toInt()))
-        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-        decoder.setOnPartialImageListener { false }
+    private fun decode(file: File): Bitmap {
+        require(file.length() in 1..20 * 1024 * 1024L)
+        return FileInputStream(file).channel.use { channel ->
+            // A read-only mapped buffer avoids a second full compressed-image heap copy and the
+            // API 35 JVM runtime's Android-only file-descriptor decoder binding.
+            val bytes = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
+            ImageDecoder.decodeBitmap(ImageDecoder.createSource(bytes)) { decoder, info, _ ->
+                require(info.mimeType in listOf("image/png", "image/jpeg", "image/webp")) { "Unsupported image format: ${info.mimeType}" }
+                val width = info.size.width
+                val height = info.size.height
+                require(width > 0 && height > 0 && width.toLong() * height <= 100_000_000L)
+                val scale = minOf(1.0, 2048.0 / maxOf(width, height))
+                decoder.setTargetSize(maxOf(1, (width * scale).toInt()), maxOf(1, (height * scale).toInt()))
+                decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                decoder.setOnPartialImageListener { false }
+            }
+        }
     }
 
     private fun save(pin: Boolean) {

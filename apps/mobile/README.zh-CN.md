@@ -124,7 +124,7 @@ Bridge 文件／相机操作串行执行，最长等待五分钟。取消、文�
 
 ```powershell
 Set-Location apps/mobile/android
-./gradlew.bat :app:lintDebug :app:testDebugUnitTest :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
+./gradlew.bat :app:lintDebug :app:testDebugUnitTest :app:testIconUi :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
 ```
 
 Debug APK 位于 `app/build/outputs/apk/debug/app-debug.apk`。正式发布沿用只保存在仓库 Secrets 中的签名密钥，本地未签名 Release 构建或 Debug 安装不能替代正式签名核验。

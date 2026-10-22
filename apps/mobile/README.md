@@ -124,7 +124,7 @@ Use Android Studio or Android SDK 36 and JDK 17. The repository includes the Gra
 
 ```powershell
 Set-Location apps/mobile/android
-./gradlew.bat :app:lintDebug :app:testDebugUnitTest :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
+./gradlew.bat :app:lintDebug :app:testDebugUnitTest :app:testIconUi :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
 ```
 
 The Debug APK is `app/build/outputs/apk/debug/app-debug.apk`. Official releases use the established signing key stored only in repository Secrets. A local unsigned Release build or a Debug install is not official-signer evidence.
