@@ -15,6 +15,7 @@ Android 10 or later is supported. The local iOS experiment is not a published or
 - This fork candidate is built by Actions; see the [IPv6 guide](../../docs/IPV6_DIRECT.en.md).
 - App icon choices show their real artwork. Local image selection, drag/zoom/rotation cropping and a custom desktop shortcut are available.
 - Actions also provides **DSH Mobile**, a parallel test APK (`io.github.sayach.dshmobile.icontest`). It installs alongside the old app with separate data and requires pairing computers again; it neither replaces the old app nor reads/deletes its pairings. Original-package Debug APKs with different temporary signing keys cannot upgrade each other in place.
+- Fork builds use a persistent signing key stored in Actions Secrets and verify its certificate after compilation. Future updates with the same package and signer can retain this new app’s data. This signer differs from upstream releases and early temporary Debug keys. Private keys are excluded from source and downloads; upstream release signature checks remain independent.
 
 ## Install and pair
 

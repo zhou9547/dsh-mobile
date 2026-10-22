@@ -5,6 +5,7 @@ Notable changes are recorded here. GitHub Releases provide the downloadable pack
 ## IPv6 fork candidate (unreleased)
 
 - Android 0.6.7 / build 83, displayed as DSH Mobile, adds real previews for all built-in launcher icons and local image selection/cropping for a user-confirmed custom desktop shortcut. The app drawer retains a packaged icon; paired data is unchanged. A separate `.icontest` package can coexist with older signed installations.
+- Pin fork artifacts to a persistent fork certificate, with private key material supplied through Actions Secrets and excluded from artifacts; preserve the upstream release signing gate.
 - Add a direct IPv6 HTTPS provider with custom-domain AAAA support, automatic CA/leaf generation and same-CA leaf renewal. Require existing fingerprint-bound dsh2 QR/link pairing.
 - Android 0.6.6 / build 82 recognizes public IPv6 entries and explains automatic App-private CA trust. Upstream published App metadata remains unchanged.
 - Build the fork APK and plugin through GitHub Actions. Debug APKs are test artifacts, not upstream-signed releases.

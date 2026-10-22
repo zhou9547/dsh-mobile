@@ -13,6 +13,9 @@ val releaseSigningConfigured = listOf(
     releaseKeyAlias,
     releaseKeyPassword,
 ).all { it.isPresent && it.get().isNotBlank() }
+val forkStoreFile = providers.environmentVariable("DSH_FORK_KEYSTORE_FILE")
+val forkStorePassword = providers.environmentVariable("DSH_FORK_KEYSTORE_PASSWORD")
+val forkSigningConfigured = listOf(forkStoreFile, forkStorePassword).all { it.isPresent && it.get().isNotBlank() }
 
 android {
     namespace = "io.github.sayach.dshmobile"
@@ -28,6 +31,15 @@ android {
     }
 
     signingConfigs {
+        create("fork") {
+            if (forkSigningConfigured) {
+                storeFile = file(forkStoreFile.get())
+                storeType = "PKCS12"
+                storePassword = forkStorePassword.get()
+                keyAlias = "dsh-mobile-fork"
+                keyPassword = forkStorePassword.get()
+            }
+        }
         create("release") {
             if (releaseSigningConfigured) {
                 storeFile = file(releaseStoreFile.get())
@@ -39,6 +51,9 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            if (forkSigningConfigured) signingConfig = signingConfigs.getByName("fork")
+        }
         create("iconTest") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".icontest"
