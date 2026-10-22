@@ -222,7 +222,13 @@ class CustomLauncherIconTest {
         view.measure(View.MeasureSpec.makeMeasureSpec(pixelsWide, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(pixelsHigh, View.MeasureSpec.EXACTLY))
         view.layout(0, 0, pixelsWide, pixelsHigh)
+        fun settleDrawables(current: View) {
+            current.jumpDrawablesToCurrentState()
+            if (current is ViewGroup) for (index in 0 until current.childCount) settleDrawables(current.getChildAt(index))
+        }
+        settleDrawables(view)
         val screenshot = Bitmap.createBitmap(pixelsWide, pixelsHigh, Bitmap.Config.ARGB_8888)
+        Canvas(screenshot).drawColor(context.getColor(R.color.app_background))
         view.draw(Canvas(screenshot))
         val night = context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK ==
             android.content.res.Configuration.UI_MODE_NIGHT_YES

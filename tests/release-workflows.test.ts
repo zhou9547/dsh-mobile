@@ -77,7 +77,7 @@ describe('independent plugin and Android release workflows', () => {
     const steps = release.jobs.android!.steps
     const commands = steps.map(step => step.run ?? '').join('\n')
     expect(commands).toContain('npm run check:android-release-tag')
-    expect(commands).toContain('lintDebug testDebugUnitTest assembleRelease')
+    expect(commands).toContain('lintDebug testDebugUnitTest testIconUi assembleRelease')
     expect(commands).toContain('node scripts/verify-android-signature.mjs')
     expect(commands).toContain('40 * 1024 * 1024')
     expect(steps.find(step => step.name === 'Remove signing keystore')?.if).toBe('always()')
