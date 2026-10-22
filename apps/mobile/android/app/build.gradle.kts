@@ -77,3 +77,20 @@ dependencies {
     testImplementation("org.robolectric:robolectric:4.16")
     testImplementation("org.json:json:20260814")
 }
+
+// Robolectric/native graphics change process-wide Android/security runtime state. Keep the
+// existing real-JSSE loopback tests in their own JVM, with no UI sandbox executed before them.
+tasks.withType<Test>().configureEach {
+    if (name == "testDebugUnitTest" || name == "testReleaseUnitTest") {
+        exclude("**/CustomLauncherIconTest.class")
+    }
+}
+tasks.register<Test>("testIconUi") {
+    val unitTests = tasks.named<Test>("testDebugUnitTest").get()
+    dependsOn(unitTests)
+    testClassesDirs = unitTests.testClassesDirs
+    classpath = unitTests.classpath
+    systemProperties(unitTests.systemProperties)
+    include("**/CustomLauncherIconTest.class")
+    maxHeapSize = "1g"
+}

@@ -27,7 +27,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
       - name: Android tests, lint and APK
         working-directory: apps/mobile/android
-        run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
+        run: bash ./gradlew --no-daemon :app:lintDebug :app:testDebugUnitTest :app:testIconUi :app:assembleDebug -x :app:lintAnalyzeDebugUnitTest -x :app:lintAnalyzeDebugAndroidTest
       - name: Prepare downloadable APK
         run: |
           mkdir -p apk
