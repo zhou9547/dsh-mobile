@@ -14,7 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      DSH_FORK_KEYSTORE_FILE: ${{ runner.temp }}/dsh-mobile-fork.p12
       DSH_FORK_KEYSTORE_PASSWORD: ${{ secrets.DSH_FORK_KEYSTORE_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
@@ -25,7 +24,9 @@ jobs:
           test -n "$DSH_FORK_KEYSTORE_BASE64" || { echo 'Missing fork keystore secret' >&2; exit 1; }
           test -n "$DSH_FORK_KEYSTORE_PASSWORD" || { echo 'Missing fork keystore password secret' >&2; exit 1; }
           umask 077
-          printf '%s' "$DSH_FORK_KEYSTORE_BASE64" | base64 --decode > "$DSH_FORK_KEYSTORE_FILE"
+          fork_keystore="$RUNNER_TEMP/dsh-mobile-fork.p12"
+          printf '%s' "$DSH_FORK_KEYSTORE_BASE64" | base64 --decode > "$fork_keystore"
+          printf 'DSH_FORK_KEYSTORE_FILE=%s\n' "$fork_keystore" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -79,7 +80,7 @@ jobs:
           if-no-files-found: ignore
       - name: Remove signing keystore
         if: always()
-        run: rm -f "$DSH_FORK_KEYSTORE_FILE"
+        run: if [ -n "${DSH_FORK_KEYSTORE_FILE:-}" ]; then rm -f "$DSH_FORK_KEYSTORE_FILE"; fi
 
   plugin:
     name: Test and package IPv6 desktop plugin
