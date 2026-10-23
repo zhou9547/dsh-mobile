@@ -25,8 +25,8 @@ android {
         applicationId = "io.github.sayach.dshmobile"
         minSdk = 29
         targetSdk = 36
-        versionCode = 83
-        versionName = "0.6.7"
+        versionCode = 84
+        versionName = "0.6.8"
         manifestPlaceholders["launcherAppLabel"] = "@string/app_name"
     }
 
@@ -104,7 +104,7 @@ dependencies {
 // existing real-JSSE loopback tests in their own JVM, with no UI sandbox executed before them.
 tasks.withType<Test>().configureEach {
     if (name == "testDebugUnitTest" || name == "testReleaseUnitTest") {
-        exclude("**/CustomLauncherIconTest.class")
+        exclude("**/LauncherIconUiTest.class")
     }
 }
 tasks.register<Test>("testIconUi") {
@@ -113,6 +113,6 @@ tasks.register<Test>("testIconUi") {
     testClassesDirs = unitTests.testClassesDirs
     classpath = unitTests.classpath
     systemProperties(unitTests.systemProperties)
-    include("**/CustomLauncherIconTest.class")
+    include("**/LauncherIconUiTest.class")
     maxHeapSize = "1g"
 }

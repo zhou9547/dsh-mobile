@@ -17,6 +17,13 @@ class LauncherManifestTest {
         val activities = doc.getElementsByTagName("activity")
         val main = (0 until activities.length).map { activities.item(it) as Element }
             .single { it.getAttributeNS(ANDROID_NAMESPACE, "name") == ".MainActivity" }
+        assertTrue((0 until activities.length).none {
+            (activities.item(it) as Element).getAttributeNS(ANDROID_NAMESPACE, "name") == ".IconEditorActivity"
+        })
+        val receivers = doc.getElementsByTagName("receiver")
+        assertTrue((0 until receivers.length).none {
+            (receivers.item(it) as Element).getAttributeNS(ANDROID_NAMESPACE, "name") == ".IconPinnedReceiver"
+        })
         assertEquals("true", main.getAttributeNS(ANDROID_NAMESPACE, "exported"))
         assertEquals(0, main.getElementsByTagName("intent-filter").length)
         val aliases = doc.getElementsByTagName("activity-alias")
@@ -24,6 +31,9 @@ class LauncherManifestTest {
         assertEquals(LauncherIconPolicy.icons.map { ".${it.alias}" }.toSet(),
             entries.map { it.getAttributeNS(ANDROID_NAMESPACE, "name") }.toSet())
         assertEquals(1, entries.count { it.getAttributeNS(ANDROID_NAMESPACE, "enabled") == "true" })
+        assertEquals("@drawable/ic_launcher_tianqing_fish", entries.single {
+            it.getAttributeNS(ANDROID_NAMESPACE, "name") == ".LauncherTianqingFish"
+        }.getAttributeNS(ANDROID_NAMESPACE, "icon"))
         for (alias in entries) {
             assertEquals(".MainActivity", alias.getAttributeNS(ANDROID_NAMESPACE, "targetActivity"))
             assertEquals("true", alias.getAttributeNS(ANDROID_NAMESPACE, "exported"))

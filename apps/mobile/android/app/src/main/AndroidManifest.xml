@@ -132,8 +132,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
-        <activity android:name=".IconEditorActivity" android:exported="false" />
-        <receiver android:name=".IconPinnedReceiver" android:exported="false" />
+        <activity-alias
+            android:name=".LauncherTianqingFish"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@drawable/ic_launcher_tianqing_fish"
+            android:label="${launcherAppLabel}"
+            android:roundIcon="@drawable/ic_launcher_tianqing_fish"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
         <activity
             android:name=".ScanActivity"
             android:exported="false"

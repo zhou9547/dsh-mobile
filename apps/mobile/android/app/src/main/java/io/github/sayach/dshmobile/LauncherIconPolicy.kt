@@ -13,6 +13,7 @@ internal object LauncherIconPolicy {
         Icon("official_whale_mono", "LauncherOfficialWhaleMono"),
         Icon("official_whale_black", "LauncherOfficialWhaleBlack"),
         Icon("official_whale_white", "LauncherOfficialWhaleWhite"),
+        Icon("tianqing_fish", "LauncherTianqingFish"),
     )
 
     /** Alias class names belong to the Kotlin namespace, not a variant's application ID. */
